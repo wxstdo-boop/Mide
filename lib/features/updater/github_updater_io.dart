@@ -10,7 +10,6 @@
 import 'dart:io' as io;
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -167,7 +166,8 @@ class GithubUpdater {
         .toList();
     if (assets.isEmpty) return null;
 
-    const wanted = switch (currentPlatformTag) {
+    // Asset-hint keywords per platform (runtime value, not const).
+    final wanted = switch (currentPlatformTag) {
       'windows' => ['Windows', '.exe', '.msi'],
       'macos' => ['mac', '.dmg', '.pkg'],
       'linux' => ['Linux', '.deb', '.AppImage', '.rpm', '.tar.gz'],

@@ -2327,7 +2327,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
             icon: const Icon(Icons.open_in_new_rounded, size: 16),
             label: const Text('Открыть GitHub Releases'),
             style: TextButton.styleFrom(
-              fontSize: 12.5,
+              textStyle: const TextStyle(fontSize: 12.5),
               foregroundColor: scheme.onSurfaceVariant,
             ),
           ),
@@ -2338,10 +2338,10 @@ class _UpdateSectionState extends State<_UpdateSection> {
 
   Widget _buildResult(ColorScheme scheme, UpdateCheckResult? res) {
     if (res == null) {
-      return _ResultCard(
+      return const _ResultCard(
         icon: Icons.cloud_queue_rounded,
         title: 'Обновления из GitHub',
-        lines: const [
+        lines: [
           'Кнопка проверит релизы и предложит установить свежий билд Mide',
         ],
       );
@@ -2359,10 +2359,10 @@ class _UpdateSectionState extends State<_UpdateSection> {
           lines: [res.error ?? 'Неизвестная ошибка'],
         );
       case UpdateKind.none:
-        return _ResultCard(
+        return const _ResultCard(
           icon: Icons.info_outline_rounded,
           title: 'Релизов пока нет',
-          lines: const [
+          lines: [
             'Опубликуй первый релиз в GitHub — и он сразу появится здесь',
           ],
         );

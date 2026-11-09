@@ -76,11 +76,10 @@ class GithubUpdater {
   Future<void> openReleasePage(UpdateCheckResult result) async {
     final url = result.releaseUrl ?? GithubConfig.releasesPage;
     try {
-      await launchUrl(Uri.parse(url),
-          mode: LaunchMode.platformSpecific,
-          webOnlyOptions: const WebOnlyOptions(displayName: 'Mide update'));
+      // Opens in the system browser on web (new tab), native browser elsewhere.
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     } catch (_) {
-      // No browser available — the user can copy the link.
+      // No browser available — the user can open the link manually.
     }
   }
 }
