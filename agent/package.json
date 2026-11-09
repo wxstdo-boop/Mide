@@ -1,0 +1,18 @@
+{
+  "name": "mide-agent",
+  "version": "0.1.0",
+  "description": "Mide AGI sidecar: Cline SDK coding agent (files, commands, MCP) exposed over HTTP/SSE. Works with Gemini, OpenAI, OpenRouter and free local models via Ollama.",
+  "type": "module",
+  "main": "src/index.mjs",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "start:ollama": "node src/index.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@cline/sdk": "0.0.75"
+  },
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Native launch splash, dark "bloody" theme (all API levels). Same gradient
+  shape as the light variant, tuned to the dark surface the Flutter splash
+  paints, so a dark-theme user does not get a light flash at cold start.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="#3A2022"
+                android:centerColor="#241B1C"
+                android:endColor="#1E1718" />
+        </shape>
+    </item>
+</layer-list>

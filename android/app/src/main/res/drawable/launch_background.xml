@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Native launch splash (all API levels — the old drawable-v21 variant with
+  slightly different colors was removed so there is a single source of truth).
+
+  A full-bleed rectangle, not an inset: it paints the whole window, including
+  the strips behind the transparent status / navigation bars set in
+  res/values-v21/styles.xml. The stops mirror the in-app _SplashShell
+  (primary @18% over surface -> surface at 50%) so the hand-off from the cold
+  start window to the Flutter splash to HomePage is one continuous surface
+  with no color jump.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="#FDE3E0"
+                android:centerColor="#FFF2F0"
+                android:endColor="#FFF8F6" />
+        </shape>
+    </item>
+</layer-list>

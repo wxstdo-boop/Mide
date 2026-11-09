@@ -1,0 +1,27 @@
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+*.iml
+.idea/
+.vscode/
+android/.gradle/
+android/local.properties
+
+# Mide AGI sidecar
+agent/node_modules/
+agent/.env
+
+# Local build artifacts (releases ship APKs via release-ship.yml, not git)
+/*.apk
+build_log.txt
+
+# Agent / scratch
+.agnes/
+.freebuff/
+.agent-probe.mjs
+.agent-test.log
+.agent_probe_out.txt

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Theme applied to the Android Window while the process is starting when the
+  OS's Dark Mode setting is off.
+-->
+<resources>
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <!-- Window background shown from the very first frame: a full-bleed
+             crimson gradient (no inset, no status-bar strip), matching the
+             in-app _SplashShell so the hand-off is seamless. -->
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+    <!-- Window background behind the running Flutter UI (overscroll, recents,
+         Flutter's own launch). Same drawable so nothing ever flashes white. -->
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+</resources>

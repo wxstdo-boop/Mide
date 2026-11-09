@@ -1,0 +1,67 @@
+name: Release Ship
+
+# Auto-release pipeline: every push to main builds the release APK and
+# publishes it as a GitHub Release. The version comes from pubspec.yaml
+# (1.0.0+1 -> v1.0.0), so bumping the version + pushing ships a new build.
+# The in-app "Проверить обновления" button picks the latest release up.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-ship:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Resolve version from pubspec
+        id: version
+        run: |
+          version=$(sed -n 's/^version: *\([0-9][^+]*\).*/\1/p' pubspec.yaml | head -n1)
+          echo "value=${version}" >> "$GITHUB_OUTPUT"
+          echo "Shipping Mide v${version}"
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build release APK (arm64)
+        run: flutter build apk --release --target-platform android-arm64
+
+      - name: Stage artifact
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk \
+             "mide-${{ steps.version.outputs.value }}-arm64-release.apk"
+          ls -lh
+
+      - name: Has this version already shipped?
+        id: tag
+        run: |
+          tag="v${{ steps.version.outputs.value }}"
+          if gh api "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip — release already exists
+        if: steps.tag.outputs.exists == 'true'
+        run: echo "v${{ steps.version.outputs.value }} уже вышла — релиз не дублируем"
+
+      - name: Create GitHub Release
+        if: steps.tag.outputs.exists != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.value }}
+          name: Mide v${{ steps.version.outputs.value }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: mide-${{ steps.version.outputs.value }}-arm64-release.apk
