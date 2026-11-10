@@ -2234,11 +2234,8 @@ class _VpnToggleCard extends ConsumerWidget {
 
 // ── Settings: the "Обновления" section ────────────────────────────────────────
 
-/// In-app auto-update: "Проверить обновления" hits
-/// `GET /repos/<owner>/<repo>/releases/latest`, then
-/// "Скачать и установить" pulls the asset matching this platform and launches
-/// the installer (on Android the system "install?" dialog appears, on
-/// desktop the shell asks how to open). Web degrades to a browser download.
+/// One-tap update: checks the latest GitHub release, downloads the Android
+/// arm64 APK when needed, and opens Android's installer for confirmation.
 class _UpdateSection extends StatefulWidget {
   const _UpdateSection();
 
@@ -2258,28 +2255,29 @@ class _UpdateSectionState extends State<_UpdateSection> {
     setState(() => _checking = true);
     try {
       final res = await githubUpdater.checkLatest();
-      if (mounted) setState(() => _result = res);
-    } catch (e) {
-      if (mounted) setState(() => _result = UpdateCheckResult.failure('$e'));
-    } finally {
-      if (mounted) setState(() => _checking = false);
-    }
-  }
-
-  Future<void> _install() async {
-    final res = _result;
-    if (res == null || !res.hasUpdate || _busy) return;
-    setState(() => _installing = true);
-    try {
-      final done = await githubUpdater.downloadAndInstall(res);
-      if (mounted) setState(() => _result = done);
+      if (!mounted) return;
+      setState(() {
+        _result = res;
+        if (res.hasUpdate) {
+          _checking = false;
+          _installing = true;
+        }
+      });
+      if (res.hasUpdate) {
+        final done = await githubUpdater.downloadAndInstall(res);
+        if (mounted) setState(() => _result = done);
+      }
     } catch (e) {
       if (mounted) {
-        setState(() => _result = UpdateCheckResult.failure(
-            'Скачать не удалось: $e'));
+        setState(() => _result = UpdateCheckResult.failure('$e'));
       }
     } finally {
-      if (mounted) setState(() => _installing = false);
+      if (mounted) {
+        setState(() {
+          _checking = false;
+          _installing = false;
+        });
+      }
     }
   }
 
@@ -2302,7 +2300,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
           width: double.infinity,
           child: FilledButton.icon(
             onPressed: _busy ? null : _check,
-            icon: _checking
+            icon: _busy
                 ? const SizedBox(
                     width: 18,
                     height: 18,
@@ -2310,11 +2308,13 @@ class _UpdateSectionState extends State<_UpdateSection> {
                   )
                 : const Icon(Icons.system_update_alt_rounded),
             label: Text(
-              _checking
-                  ? 'Ищем новый релиз…'
-                  : res == null
-                      ? 'Проверить обновления'
-                      : 'Проверить снова',
+              _installing
+                  ? 'Скачиваем и открываем установщик…'
+                  : _checking
+                      ? 'Ищем новый релиз…'
+                      : res == null
+                          ? 'Проверить и обновить'
+                          : 'Проверить снова',
             ),
           ),
         ),
@@ -2342,7 +2342,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
         icon: Icons.cloud_queue_rounded,
         title: 'Обновления из GitHub',
         lines: [
-          'Кнопка проверит релизы и предложит установить свежий билд Mide',
+          'Одно нажатие проверит GitHub, скачает новый APK и откроет установщик',
         ],
       );
     }
@@ -2361,9 +2361,9 @@ class _UpdateSectionState extends State<_UpdateSection> {
       case UpdateKind.none:
         return const _ResultCard(
           icon: Icons.info_outline_rounded,
-          title: 'Релизов пока нет',
+          title: 'Нет доступных релизов',
           lines: [
-            'Опубликуй первый релиз в GitHub — и он сразу появится здесь',
+            'GitHub пока не вернул опубликованный релиз Mide',
           ],
         );
       case UpdateKind.noMatch:
@@ -2371,7 +2371,9 @@ class _UpdateSectionState extends State<_UpdateSection> {
           icon: Icons.search_off_rounded,
           title: 'Версия ${res.latestVersion} найдена',
           lines: [
-            'Но в этом релизе нет файла для платформы ${currentPlatformTag}',
+            currentPlatformTag == 'android'
+                ? 'В релизе нет совместимого APK для Android arm64'
+                : 'Автоустановка сейчас доступна только в Android arm64-сборке',
           ],
         );
       case UpdateKind.upToDate:
@@ -2382,49 +2384,28 @@ class _UpdateSectionState extends State<_UpdateSection> {
           lines: [res.latestVersion ?? ''],
         );
       case UpdateKind.update:
-        if (res.savedPath != null) {
-          return _ResultCard(
-            icon: Icons.check_circle_rounded,
-            tone: scheme.primary,
-            title: 'Билд ${res.latestVersion} сохранён',
-            lines: [
-              'Файл: ${asset?.name ?? '—'}',
-              'Путь: ${res.savedPath}',
-              'Запусти Mide снова — новые файлы подхватятся',
-            ],
-          );
-        }
         return _ResultCard(
           icon: Icons.cloud_download_rounded,
           tone: scheme.primary,
-          title: 'Доступна версия ${res.latestVersion}',
+          title: _installing
+              ? 'Скачиваем версию ${res.latestVersion}'
+              : 'Доступна версия ${res.latestVersion}',
           lines: [
             if (asset != null) '${asset.name} · ${asset.sizeMb}',
             if (date != null) 'Выпущена: $date',
             if (res.notes != null && res.notes!.isNotEmpty) res.notes!,
-          ],
-          actions: [
-            FilledButton.icon(
-              onPressed: _busy ? null : _install,
-              icon: _installing
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.download_rounded),
-              label: Text(_installing ? 'Скачиваем…' : 'Скачать и установить'),
-            ),
+            if (_installing)
+              'После загрузки Android запросит подтверждение установки.',
           ],
         );
-      case UpdateKind.installed:
+      case UpdateKind.installerOpened:
         return _ResultCard(
-          icon: Icons.done_all_rounded,
+          icon: Icons.system_update_alt_rounded,
           tone: scheme.primary,
-          title: 'Установлено: ${res.latestVersion}',
+          title: 'Обновление передано Android: ${res.latestVersion}',
           lines: [
-            'Сохранено: ${res.savedPath}',
-            'Запусти Mide снова, чтобы изменения вступили в силу',
+            'Файл: ${asset?.name ?? '—'}',
+            'Подтверди установку в системном окне. Если Android попросит разрешение, разреши установку для Mide.',
           ],
         );
     }

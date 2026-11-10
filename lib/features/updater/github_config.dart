@@ -4,6 +4,10 @@
 class GithubConfig {
   static const String owner = 'wxstdo-boop';
   static const String repo = 'Mide';
+  static const String currentVersion = String.fromEnvironment(
+    'APP_VERSION',
+    defaultValue: '1.0.1',
+  );
 
   static String get path => '$owner/$repo';
 

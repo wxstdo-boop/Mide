@@ -1,15 +1,12 @@
-// Real (VM/desktop/mobile) GitHub auto-updater.
+// Native GitHub updater. The current release pipeline publishes Android arm64.
 //
 // * check:    GET /repos/<owner>/<repo>/releases/latest
 // * download: dio streaming download into the OS downloads dir
-// * launch:   native installer (.exe/.msi/.dmg/.deb) opened via the OS;
-//             on Android the .apk is opened with an ACTION_VIEW intent.
-//
-// The web build gets [github_updater_web] instead (check still works;
-// "install" degrades to "open the release page in a browser").
+// * launch:   opens the downloaded APK in Android's system installer.
 import 'dart:io' as io;
 
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,10 +14,17 @@ import 'github_config.dart';
 import 'updater_types.dart';
 
 class GithubUpdater {
-  const GithubUpdater({this.dio});
+  const GithubUpdater({
+    this.dio,
+    this.currentVersion = GithubConfig.currentVersion,
+  });
 
   /// Injectable for tests; a default is created otherwise.
   final Dio? dio;
+  final String currentVersion;
+
+  static const MethodChannel _installerChannel =
+      MethodChannel('mide/update_installer');
 
   static Dio _makeDefault() => Dio(BaseOptions(
         baseUrl: 'https://api.github.com',
@@ -50,19 +54,36 @@ class GithubUpdater {
       final htmlUrl = (data['html_url'] ?? '').toString();
       final body = (data['body'] ?? '').toString();
       final publishedAt = (data['published_at'] ?? '').toString();
-      final prerelease = data['prerelease'] == true;
+      final version = _stripV(tag);
+      final comparison = compareVersions(version, currentVersion);
+      if (comparison == null) {
+        return UpdateCheckResult.failure(
+            'Не удалось сравнить версии $currentVersion и $version');
+      }
+      if (comparison <= 0) {
+        return UpdateCheckResult.upToDate(
+          latestVersion: version,
+          releaseUrl: htmlUrl,
+          notes: body.isEmpty ? null : body,
+          publishedAt: publishedAt.isEmpty ? null : publishedAt,
+        );
+      }
 
-      final asset = _pickAsset((data['assets'] ?? const []) as List, prerelease);
+      final rawAssets = data['assets'];
+      if (rawAssets is! List) {
+        return UpdateCheckResult.failure('В релизе отсутствует список файлов');
+      }
+      final asset = androidArm64ApkFrom(rawAssets);
       if (asset == null) {
         return UpdateCheckResult.noMatchingAsset(
-          latestVersion: _stripV(tag),
+          latestVersion: version,
           releaseUrl: htmlUrl,
           notes: body.isEmpty ? null : body,
           publishedAt: publishedAt.isEmpty ? null : publishedAt,
         );
       }
       return UpdateCheckResult.updateAvailable(
-        latestVersion: _stripV(tag),
+        latestVersion: version,
         asset: asset,
         releaseUrl: htmlUrl,
         notes: body.isEmpty ? null : body,
@@ -78,8 +99,6 @@ class GithubUpdater {
   }
 
   /// Download [asset] to the OS downloads dir and launch the installer.
-  /// On Android this opens the system "do you want to install?" dialog.
-  /// Returns [UpdateCheckResult.installed] with the saved path.
   Future<UpdateCheckResult> downloadAndInstall(UpdateCheckResult source) async {
     final asset = source.asset;
     if (asset == null) return source;
@@ -94,8 +113,15 @@ class GithubUpdater {
       return UpdateCheckResult.failure('Файл не сохранился');
     }
 
-    await _launch(target, asset.name);
-    return UpdateCheckResult.installed(source, target);
+    if (io.Platform.isAndroid && asset.name.toLowerCase().endsWith('.apk')) {
+      await _installerChannel.invokeMethod<void>(
+        'installApk',
+        {'path': target},
+      );
+    } else {
+      await _launch(target, asset.name);
+    }
+    return UpdateCheckResult.installerOpened(source, target);
   }
 
   /// Web / unsupported: just open the release page.
@@ -138,9 +164,7 @@ class GithubUpdater {
         await io.Process.start('xdg-open', [path]);
       }
     } else {
-      // Android: open with ACTION_VIEW → the install dialog.
-      // url_launcher handles the intent routing.
-      await launchUrl(Uri.file(path));
+      throw UnsupportedError('No installer is available for $fileName');
     }
   }
 
@@ -151,55 +175,6 @@ class GithubUpdater {
     } catch (_) {
       await fallback;
     }
-  }
-
-  /// Pick the asset matching the current platform by filename hint.
-  UpdateAsset? _pickAsset(List<dynamic> rawAssets, bool prerelease) {
-    if (rawAssets.isEmpty) return null;
-    final assets = rawAssets
-        .whereType<Map>()
-        .map((m) => UpdateAsset(
-              name: (m['name'] ?? '').toString(),
-              url: (m['browser_download_url'] ?? '').toString(),
-              sizeBytes: int.tryParse((m['size'] ?? '0').toString()) ?? 0,
-            ))
-        .toList();
-    if (assets.isEmpty) return null;
-
-    // Asset-hint keywords per platform (runtime value, not const).
-    final wanted = switch (currentPlatformTag) {
-      'windows' => ['Windows', '.exe', '.msi'],
-      'macos' => ['mac', '.dmg', '.pkg'],
-      'linux' => ['Linux', '.deb', '.AppImage', '.rpm', '.tar.gz'],
-      'android' => ['Android', '.apk'],
-      'ios' => ['iOS', '.ipa'],
-      'web' => ['web', '.html'],
-      _ => const [
-          'Windows', '.exe', '.msi',
-          'mac', '.dmg', '.pkg',
-          'Linux', '.deb',
-        ],
-    };
-
-    // Strongest match: filename contains the platform keyword AND extension.
-    for (final a in assets) {
-      final n = a.name.toLowerCase();
-      if (n.contains(wanted[0].toLowerCase()) &&
-          (n.contains(wanted[1].toLowerCase()) ||
-              (wanted.length > 2 && n.contains(wanted[2].toLowerCase())))) {
-        return a;
-      }
-    }
-    // Extension-only match.
-    for (final a in assets) {
-      final n = a.name.toLowerCase();
-      for (var i = 1; i < wanted.length; i++) {
-        if (n.endsWith(wanted[i].toLowerCase())) return a;
-      }
-    }
-    // Prereleases can carry fewer assets — fall back to the first one.
-    if (prerelease) return assets.first;
-    return assets.first;
   }
 
   String _stripV(String tag) =>

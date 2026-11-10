@@ -81,9 +81,10 @@ class UpdateCheckResult {
   factory UpdateCheckResult.failure(String error) =>
       UpdateCheckResult._(kind: UpdateKind.error, error: error);
 
-  factory UpdateCheckResult.installed(UpdateCheckResult source, String path) =>
+  factory UpdateCheckResult.installerOpened(
+          UpdateCheckResult source, String path) =>
       UpdateCheckResult._(
-        kind: source.kind,
+        kind: UpdateKind.installerOpened,
         latestVersion: source.latestVersion,
         asset: source.asset,
         releaseUrl: source.releaseUrl,
@@ -107,7 +108,50 @@ class UpdateCheckResult {
   bool get none => kind == UpdateKind.none;
 }
 
-enum UpdateKind { update, upToDate, none, noMatch, error, installed }
+enum UpdateKind { update, upToDate, none, noMatch, error, installerOpened }
+
+/// Compares numeric release versions, ignoring a leading `v` and build metadata.
+/// Returns null when either input is not a dotted numeric version.
+int? compareVersions(String left, String right) {
+  final pattern = RegExp(r'^v?(\d+(?:\.\d+)*)(?:[-+].*)?$');
+  final leftMatch = pattern.firstMatch(left.trim());
+  final rightMatch = pattern.firstMatch(right.trim());
+  if (leftMatch == null || rightMatch == null) return null;
+
+  final leftParts = leftMatch.group(1)!.split('.').map(int.parse).toList();
+  final rightParts = rightMatch.group(1)!.split('.').map(int.parse).toList();
+  final length =
+      leftParts.length > rightParts.length ? leftParts.length : rightParts.length;
+  for (var i = 0; i < length; i++) {
+    final leftPart = i < leftParts.length ? leftParts[i] : 0;
+    final rightPart = i < rightParts.length ? rightParts[i] : 0;
+    if (leftPart != rightPart) return leftPart.compareTo(rightPart);
+  }
+  return 0;
+}
+
+UpdateAsset? androidArm64ApkFrom(List<dynamic> rawAssets) {
+  for (final item in rawAssets.whereType<Map>()) {
+    final name = (item['name'] ?? '').toString();
+    final url = (item['browser_download_url'] ?? '').toString();
+    final uri = Uri.tryParse(url);
+    final lowerName = name.toLowerCase();
+    if (!lowerName.startsWith('mide-') ||
+        !lowerName.contains('arm64') ||
+        !lowerName.endsWith('.apk') ||
+        uri == null ||
+        uri.scheme != 'https' ||
+        uri.host != 'github.com') {
+      continue;
+    }
+    return UpdateAsset(
+      name: name,
+      url: url,
+      sizeBytes: int.tryParse((item['size'] ?? '0').toString()) ?? 0,
+    );
+  }
+  return null;
+}
 
 /// Best-effort "what platform am I on" label, used to pick a release asset
 /// whose filename matches (e.g. `mide-windows-x64.exe`).

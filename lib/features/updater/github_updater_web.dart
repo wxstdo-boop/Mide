@@ -1,7 +1,7 @@
 // Web stub for the GitHub auto-updater. The *check* works the same as on
-// VM (plain dio against the public GitHub API, no token needed), but a web
-// app cannot launch a local installer — "install" opens the asset / release
-// page in the browser instead.
+// VM (plain dio against the public GitHub API, no token needed). The current
+// release pipeline publishes Android-only assets, so web reports no matching
+// update rather than downloading an incompatible APK.
 import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -9,9 +9,13 @@ import 'github_config.dart';
 import 'updater_types.dart';
 
 class GithubUpdater {
-  const GithubUpdater({this.dio});
+  const GithubUpdater({
+    this.dio,
+    this.currentVersion = GithubConfig.currentVersion,
+  });
 
   final Dio? dio;
+  final String currentVersion;
 
   static Dio _makeDefault() => Dio(BaseOptions(
         baseUrl: 'https://api.github.com',
@@ -39,20 +43,37 @@ class GithubUpdater {
       final htmlUrl = (data['html_url'] ?? '').toString();
       final body = (data['body'] ?? '').toString();
       final publishedAt = (data['published_at'] ?? '').toString();
-
-      final assets = ((data['assets'] ?? const []) as List)
-          .whereType<Map>()
-          .map((m) => UpdateAsset(
-                name: (m['name'] ?? '').toString(),
-                url: (m['browser_download_url'] ?? '').toString(),
-                sizeBytes: int.tryParse((m['size'] ?? '0').toString()) ?? 0,
-              ))
-          .toList();
-      if (assets.isEmpty) return UpdateCheckResult.noReleases();
+      final version = _stripV(tag);
+      final comparison = compareVersions(version, currentVersion);
+      if (comparison == null) {
+        return UpdateCheckResult.failure(
+            'Не удалось сравнить версии $currentVersion и $version');
+      }
+      if (comparison <= 0) {
+        return UpdateCheckResult.upToDate(
+          latestVersion: version,
+          releaseUrl: htmlUrl,
+          notes: body.isEmpty ? null : body,
+          publishedAt: publishedAt.isEmpty ? null : publishedAt,
+        );
+      }
+      final rawAssets = data['assets'];
+      if (rawAssets is! List) {
+        return UpdateCheckResult.failure('В релизе отсутствует список файлов');
+      }
+      final asset = androidArm64ApkFrom(rawAssets);
+      if (asset == null) {
+        return UpdateCheckResult.noMatchingAsset(
+          latestVersion: version,
+          releaseUrl: htmlUrl,
+          notes: body.isEmpty ? null : body,
+          publishedAt: publishedAt.isEmpty ? null : publishedAt,
+        );
+      }
 
       return UpdateCheckResult.updateAvailable(
-        latestVersion: _stripV(tag),
-        asset: assets.first,
+        latestVersion: version,
+        asset: asset,
         releaseUrl: htmlUrl,
         notes: body.isEmpty ? null : body,
         publishedAt: publishedAt.isEmpty ? null : publishedAt,
@@ -65,12 +86,12 @@ class GithubUpdater {
     }
   }
 
-  /// Web: "install" = open the asset URL in the browser (it downloads).
+  /// Web cannot install an APK and currently has no matching release asset.
   Future<UpdateCheckResult> downloadAndInstall(UpdateCheckResult source) async {
     final asset = source.asset;
     if (asset == null) return source;
     await openReleasePage(source);
-    return UpdateCheckResult.installed(source, 'browser:${asset.url}');
+    return UpdateCheckResult.installerOpened(source, 'browser:${asset.url}');
   }
 
   Future<void> openReleasePage(UpdateCheckResult result) async {

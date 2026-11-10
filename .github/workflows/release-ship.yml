@@ -2,7 +2,7 @@ name: Release Ship
 
 # Auto-release pipeline: every push to main builds the release APK and
 # publishes it as a GitHub Release. The version comes from pubspec.yaml
-# (1.0.0+1 -> v1.0.0), so bumping the version + pushing ships a new build.
+# (1.0.1+2 -> v1.0.1), so bumping the version + pushing ships a new build.
 # The in-app "Проверить обновления" button picks the latest release up.
 on:
   push:
@@ -19,11 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-
       - name: Resolve version from pubspec
         id: version
         run: |
@@ -31,20 +26,10 @@ jobs:
           echo "value=${version}" >> "$GITHUB_OUTPUT"
           echo "Shipping Mide v${version}"
 
-      - name: Pub get
-        run: flutter pub get
-
-      - name: Build release APK (arm64)
-        run: flutter build apk --release --target-platform android-arm64
-
-      - name: Stage artifact
-        run: |
-          mv build/app/outputs/flutter-apk/app-release.apk \
-             "mide-${{ steps.version.outputs.value }}-arm64-release.apk"
-          ls -lh
-
       - name: Has this version already shipped?
         id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           tag="v${{ steps.version.outputs.value }}"
           if gh api "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" > /dev/null 2>&1; then
@@ -55,6 +40,53 @@ jobs:
         if: steps.tag.outputs.exists == 'true'
         run: echo "v${{ steps.version.outputs.value }} уже вышла — релиз не дублируем"
 
+      - name: Set up Flutter
+        if: steps.tag.outputs.exists != 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Pub get
+        if: steps.tag.outputs.exists != 'true'
+        run: flutter pub get
+
+      - name: Run Flutter tests
+        if: steps.tag.outputs.exists != 'true'
+        run: flutter test
+
+      - name: Configure Android signing
+        if: steps.tag.outputs.exists != 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || \
+             [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "One or more Android signing repository secrets are missing" >&2
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/mide-release.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/mide-release.jks" >> "$GITHUB_ENV"
+
+      - name: Build release APK (arm64)
+        if: steps.tag.outputs.exists != 'true'
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          flutter build apk --release --target-platform android-arm64 \
+            --dart-define=APP_VERSION=${{ steps.version.outputs.value }}
+
+      - name: Stage artifact
+        if: steps.tag.outputs.exists != 'true'
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk \
+             "mide-${{ steps.version.outputs.value }}-arm64-release.apk"
+          ls -lh
+
       - name: Create GitHub Release
         if: steps.tag.outputs.exists != 'true'
         uses: softprops/action-gh-release@v2
@@ -64,4 +96,5 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
+          token: ${{ github.token }}
           files: mide-${{ steps.version.outputs.value }}-arm64-release.apk
