@@ -1,4 +1,4 @@
-﻿// Ada (M.AI) chat session вЂ” rotates across Horde + Pollinations + LLM7 +
+﻿// Ada (M.AI) chat session — rotates across Horde + Pollinations + LLM7 +
 // OVH. Non-streaming call; while waiting the UI shows a red thinking-blink,
 // then the full answer fades in. The Horde API key (free, from
 // stablehorde.net) is persisted separately and injected at request time;
@@ -15,7 +15,7 @@ import 'chat_api.dart';
 import 'providers_registry.dart';
 
 /// The single user-visible error phrase for any AI failure.
-const String aiBusyPhrase = 'РђРґР° Р·Р°РЅСЏС‚Р°, РїРѕРїСЂРѕР±СѓР№ РїРѕР·Р¶Рµ!';
+const String aiBusyPhrase = 'Ада занята, попробуй позже!';
 
 class AiSessionState {
   final List<AiMessage> messages;
@@ -23,7 +23,7 @@ class AiSessionState {
   final bool busy;
   final bool streaming;
 
-  /// Label of the provider currently "in play" (drives the LLM7в†”OVH badge).
+  /// Label of the provider currently "in play" (drives the LLM7↔OVH badge).
   final String providerLabel;
 
   const AiSessionState({
@@ -53,7 +53,7 @@ class AiSessionState {
 
 class AiSessionNotifier extends Notifier<AiSessionState> {
   static const _systemPrompt =
-      'РўС‹ вЂ” РђРґР°. РћС‚РІРµС‡Р°Р№ РјР°РєСЃРёРјР°Р»СЊРЅРѕ РєРѕСЂРѕС‚РєРѕ (1вЂ“3 РїСЂРµРґР»РѕР¶РµРЅРёСЏ), РїРѕ РґРµР»Сѓ, РІ СЏР·С‹РєРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.';
+      'Ты — Ада. Отвечай максимально коротко (1–3 предложения), по делу, в языке пользователя.';
 
   final OpenAiClient _client = OpenAiClient();
   CancelToken? _token;
@@ -213,11 +213,11 @@ class AiSessionNotifier extends Notifier<AiSessionState> {
         }
       } on DioException catch (e) {
         if (e.type == DioExceptionType.cancel || _cancelled) return null;
-        // Network-level failure вЂ” no point burning the whole rotation.
+        // Network-level failure — no point burning the whole rotation.
         _finish(errorText: aiBusyPhrase);
         return null;
       } on LlmException {
-        // Per-slot failure вЂ” remember it and rotate to the next slot so
+        // Per-slot failure — remember it and rotate to the next slot so
         // the next question starts past the broken provider/model instead
         // of waiting for the slow queue again.
         _lastSlot = idx;
@@ -288,7 +288,7 @@ class AiSessionNotifier extends Notifier<AiSessionState> {
 final aiSessionProvider =
     NotifierProvider<AiSessionNotifier, AiSessionState>(AiSessionNotifier.new);
 
-// в”Ђв”Ђ Horde API key (free from stablehorde.net), persisted in secure storage в”Ђ
+// ── Horde API key (free from stablehorde.net), persisted in secure storage ─
 
 final hordeKeyProvider =
     NotifierProvider<_HordeKeyNotifier, String>(_HordeKeyNotifier.new);

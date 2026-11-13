@@ -1135,9 +1135,9 @@ class _SendStopButtonState extends State<_SendStopButton>
 }
 
 
-// в”Ђв”Ђ Topics menu в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// ── Topics menu ───────────────────────────────────────────────────────────
 
-/// Small rounded "в‹®" button that sits under the provider badge. Tapping opens
+/// Small rounded "⋮" button that sits under the provider badge. Tapping opens
 /// a smooth, premium bottom sheet of topic presets.
 class _TopicsButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -1231,7 +1231,7 @@ class _TopicSheet extends StatelessWidget {
             const SizedBox(height: 10),
             // Title.
             Text(
-              'Р’С‹Р±СЂР°С‚СЊ С‚РµРјСѓ РґР»СЏ РђРґС‹',
+              'Выбрать тему для Ады',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
