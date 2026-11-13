@@ -23,7 +23,8 @@ void main() {
       final asset = androidArm64ApkFrom([
         {
           'name': 'mide-windows-x64.exe',
-          'browser_download_url': 'https://github.com/wxstdo-boop/Mide/file.exe',
+          'browser_download_url':
+              'https://github.com/wxstdo-boop/Mide/file.exe',
         },
         {
           'name': 'mide-1.0.1-arm64-release.apk',
@@ -48,6 +49,83 @@ void main() {
         ]),
         isNull,
       );
+    });
+
+    test('ignores non-https and non-github asset URLs', () {
+      expect(
+        androidArm64ApkFrom([
+          {
+            'name': 'mide-1.0.1-arm64-release.apk',
+            'browser_download_url': 'http://evil.example/app.apk',
+          },
+          {
+            'name': 'mide-1.0.1-arm64-release.apk',
+            'browser_download_url': 'https://evil.example/app.apk',
+          },
+        ]),
+        isNull,
+      );
+    });
+
+    test('picks the first matching asset when several are listed', () {
+      final asset = androidArm64ApkFrom([
+        {
+          'name': 'mide-1.0.1-x86.apk',
+          'browser_download_url': 'https://github.com/o/r/a.apk',
+        },
+        {
+          'name': 'mide-1.0.1-arm64-release.apk',
+          'browser_download_url': 'https://github.com/o/r/b.apk',
+          'size': 2048,
+        },
+      ]);
+      expect(asset?.name, 'mide-1.0.1-arm64-release.apk');
+      expect(asset?.sizeBytes, 2048);
+    });
+  });
+
+  group('UpdateAsset.sizeMb', () {
+    test('renders kilobytes under one megabyte', () {
+      expect(const UpdateAsset(name: 'a', url: 'u', sizeBytes: 2048).sizeMb,
+          '2 КБ');
+    });
+
+    test('renders megabytes at or above one megabyte', () {
+      expect(
+        const UpdateAsset(name: 'a', url: 'u', sizeBytes: 2 * 1024 * 1024)
+            .sizeMb,
+        '2.0 МБ',
+      );
+    });
+  });
+
+  group('UpdateCheckResult factories', () {
+    test('hasUpdate requires kind update and an asset', () {
+      final r = UpdateCheckResult.updateAvailable(
+        latestVersion: '1.1.0',
+        asset: const UpdateAsset(name: 'a', url: 'u'),
+      );
+      expect(r.hasUpdate, isTrue);
+      expect(r.failed, isFalse);
+    });
+
+    test('failure reports failed and carries the message', () {
+      final r = UpdateCheckResult.failure('boom');
+      expect(r.failed, isTrue);
+      expect(r.error, 'boom');
+    });
+
+    test('installerOpened copies the source and records the path', () {
+      final source = UpdateCheckResult.updateAvailable(
+        latestVersion: '1.1.0',
+        asset: const UpdateAsset(name: 'a', url: 'u'),
+        notes: 'n',
+      );
+      final opened = UpdateCheckResult.installerOpened(source, '/tmp/app.apk');
+      expect(opened.kind, UpdateKind.installerOpened);
+      expect(opened.latestVersion, '1.1.0');
+      expect(opened.savedPath, '/tmp/app.apk');
+      expect(opened.asset, source.asset);
     });
   });
 }

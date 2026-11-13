@@ -50,3 +50,21 @@ Common commands:
 
 WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.sock` or `runpane` resolves to a broken Windows shim, Pane may be running on Windows. Try `powershell.exe -NoProfile -Command 'Set-Location $env:TEMP; runpane doctor --json'`, then create Panes through the same PowerShell form using the saved WSL repo name or id. Use `runpane agents doctor --agent <agent> --repo <selector> --json` to diagnose the repo environment Pane will actually use.
 <!-- pane-agent-context:end -->
+
+## Mide — build and layout
+
+- Flutter app (Dart 3.5+). Validate with `flutter analyze` and `flutter test`.
+- `lib/main.dart` is the app library: it holds the imports, the `main()`
+  entry point, the splash/app shell and the `HomePage` navigation, and declares
+  four `part` files. Private widgets are shared across those parts (they are one
+  library), so add new sections as `part` files instead of standalone libraries
+  when they reuse `_AppHeader`, `_SectionTitle`, `_Entrance`, etc.
+  - `lib/app/shell.dart` — header, pill nav, entrance animation.
+  - `lib/app/tabs/vpn_tab.dart` — NPV section.
+  - `lib/app/tabs/mearn_tab.dart` — MEarn section.
+  - `lib/app/pages/settings_page.dart` — settings, theme carousel, setup, updater.
+- `lib/core/` — theme (Material You) and the persisted active-tab state.
+- `lib/features/{ai,ide,updater,vpn}/` — feature code; platform-split files use
+  the `_io.dart` / `_stub.dart` (or `_web.dart`) conditional-export pattern.
+- Tests live under `test/features/...` mirroring `lib/features/...`; pure logic
+  is unit-tested, the IDE notifiers are tested against a temp directory.

@@ -284,7 +284,7 @@ class _IdeEditorPaneState extends ConsumerState<IdeEditorPane> {
                                         'DejaVu Sans Mono',
                                         'monospace',
                                       ],
-                                      color: '$i:' == '$_caretInfo'
+                                      color: '$i:' == _caretInfo
                                           ? scheme.primary
                                           : scheme.outline,
                                     ),

@@ -91,7 +91,7 @@ class ClineAgentBackend {
   void _onChildLine(String raw) {
     for (final line in const LineSplitter().convert(raw)) {
       if (line.trim().isEmpty) continue;
-      _log = '${_log}\n$line'.split('\n').take(60).join('\n');
+      _log = '$_log\n$line'.split('\n').take(60).join('\n');
     }
   }
 

@@ -27,10 +27,14 @@ void main() {
         },
       });
       expect(conf, contains('PrivateKey = aGF2ZXlhYnllbg=='));
-      expect(conf, contains('Address = 2606:4700:1234::5678/128, 172.16.0.5/32'));
+      expect(
+          conf, contains('Address = 2606:4700:1234::5678/128, 172.16.0.5/32'));
       expect(conf, contains('PublicKey = c2VydmVycHVi'));
       expect(conf, contains('AllowedIPs = 0.0.0.0/0, ::/0'));
-      expect(conf, contains('PresharedKey = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='));
+      expect(
+          conf,
+          contains(
+              'PresharedKey = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='));
     });
 
     test('rejects responses without keys', () {
@@ -113,11 +117,12 @@ void main() {
           containsAll([XrayNode.socksPort, XrayNode.httpPort]));
       final out = (cfg['outbounds'] as List).first as Map<String, dynamic>;
       expect(out['protocol'], 'vless');
-      final rules =
-          ((cfg['routing'] as Map)['rules'] as List).cast<Map<String, dynamic>>();
+      final rules = ((cfg['routing'] as Map)['rules'] as List)
+          .cast<Map<String, dynamic>>();
       expect(
           rules.any((r) =>
-              r['domain'] is List && (r['domain'] as List).contains('geosite:category-ru')),
+              r['domain'] is List &&
+              (r['domain'] as List).contains('geosite:category-ru')),
           isTrue);
       final ss = out['streamSettings'] as Map<String, dynamic>;
       expect(ss['tlsSettings'], isNotNull);
@@ -140,9 +145,7 @@ void main() {
       expect(reality['publicKey'], n.pbk);
       expect(reality['shortId'], '18e9ea38');
       expect(
-        (out['settings'] as Map)['vnext']
-            .first['users']
-            .first['flow'],
+        (out['settings'] as Map)['vnext'].first['users'].first['flow'],
         'xtls-rprx-vision',
       );
     });

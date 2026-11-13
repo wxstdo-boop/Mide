@@ -207,12 +207,10 @@ class IdeWorkspaceNotifier extends Notifier<IdeWorkspaceState> {
     if (trimmed.contains('/') || trimmed.contains('\\')) {
       return 'Имя не может содержать "/" или "\\"';
     }
+    final sep = Platform.pathSeparator;
     final full = parentPath.endsWith('\\') || parentPath.endsWith('/')
         ? '$parentPath$trimmed'
-        : '${Platform.pathSeparator == '\\' ? '\\' : '/'}'
-            .isNotEmpty
-            ? '$parentPath${Platform.pathSeparator}$trimmed'
-            : '$parentPath/$trimmed';
+        : '$parentPath$sep$trimmed';
     final asDirectory = Directory(full);
     final asFile = File(full);
     if (asDirectory.existsSync() || asFile.existsSync()) {

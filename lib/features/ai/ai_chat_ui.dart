@@ -124,7 +124,7 @@ class _AiTabState extends ConsumerState<AiTab> {
             ),
             const SizedBox(height: 14),
             // Row 2: "Ада_" centered with the disclaimer under it.
-            Center(
+            const Center(
               child: _AdaBrand(
                 fontSize: 28,
                 subtitle: 'AGI Can Make Mistakes.',
@@ -517,7 +517,7 @@ class _HordeKeyButton extends ConsumerWidget {
 }
 
 class _AdaBrand extends StatefulWidget {
-  const _AdaBrand({super.key, this.fontSize = 20, this.subtitle});
+  const _AdaBrand({this.fontSize = 20, this.subtitle});
 
   /// Larger brand for the top-center placement.
   final double fontSize;
@@ -1095,15 +1095,15 @@ class _SendStopButtonState extends State<_SendStopButton>
                     child: ClipOval(
                       child: ShaderMask(
                         blendMode: BlendMode.srcIn,
-                        shaderCallback: (b) => LinearGradient(
+                        shaderCallback: (b) => const LinearGradient(
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
-                          colors: const [
+                          colors: [
                             Colors.transparent,
                             Colors.white,
                             Colors.transparent,
                           ],
-                          stops: const [0.0, 0.5, 1.0],
+                          stops: [0.0, 0.5, 1.0],
                         ).createShader(b),
                         child: const SizedBox(width: 52, height: 52),
                       ),

@@ -35,7 +35,7 @@ class WarpSource {
   /// Generates an X25519 keypair, enrolls it with Cloudflare and returns a
   /// ready wg-quick config string.
   static Future<String> generateConf() async {
-    final conf = await buildConf(await register());
+    final conf = buildConf(await register());
     if (conf.isEmpty) {
       throw const FreeVpnException(
           'Cloudflare вернул пустой конфиг — попробуй ещё раз');

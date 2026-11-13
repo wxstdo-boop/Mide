@@ -14,6 +14,9 @@ android/local.properties
 # Mide AGI sidecar
 agent/node_modules/
 agent/.env
+agent/.census.*
+agent/.repro.*
+agent/.agent-*
 
 # Local build artifacts (releases ship APKs via release-ship.yml, not git)
 /*.apk

@@ -65,7 +65,7 @@ class WireguardEngine {
   }
 
   /// Live stream of stage changes (connected / connecting / disconnected …).
-  Stream<VpnStage> get stageStream => _wg?.vpnStageSnapshot ?? Stream.empty();
+  Stream<VpnStage> get stageStream => _wg?.vpnStageSnapshot ?? const Stream.empty();
 
   /// Parses the `Endpoint` value from a wg-quick config string.
   static String? parseEndpoint(String conf) {

@@ -1,5 +1,6 @@
 // VpnApiClient - talks to a VPN provider REST API using an API key.
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'vpn_settings.dart';
 
 /// A single VPN server / location offered by the provider.
@@ -70,7 +71,17 @@ class VpnApiClient {
             Dio(BaseOptions(
               connectTimeout: const Duration(seconds: 15),
               receiveTimeout: const Duration(seconds: 20),
-            ))..interceptors.add(LogInterceptor(requestBody: false, responseBody: false));
+            )) {
+    // Never log request headers: they carry `Authorization: Bearer <api key>`.
+    // And only ever log at all in debug builds.
+    if (kDebugMode) {
+      _dio.interceptors.add(LogInterceptor(
+        requestHeader: false,
+        requestBody: false,
+        responseBody: false,
+      ));
+    }
+  }
 
   VpnSettings settings;
   final Dio _dio;
@@ -78,7 +89,7 @@ class VpnApiClient {
   Options get _authOptions {
     final headers = <String, dynamic>{'Accept': 'application/json'};
     if (settings.apiKey.trim().isNotEmpty) {
-      headers['Authorization'] = 'Bearer ' + settings.apiKey.trim();
+      headers['Authorization'] = 'Bearer ${settings.apiKey.trim()}';
     }
     return Options(headers: headers);
   }
@@ -104,7 +115,7 @@ class VpnApiClient {
       }
     }
     if (lastError is VpnApiException) throw lastError;
-    throw VpnApiException('Не удалось получить список серверов: ' + lastError.toString());
+    throw VpnApiException('Не удалось получить список серверов: $lastError');
   }
 
   List<String> get _possibleEndpoints => [
@@ -143,7 +154,7 @@ class VpnApiClient {
 
   /// Ask the provider to connect to a given server id.
   Future<ApiConnectResult> connect(String serverId) async {
-    final endpoints = ['/connect', '/v1/connect', '/api/connect', '/api/v1/connect', '/servers/' + serverId + '/connect'];
+    final endpoints = ['/connect', '/v1/connect', '/api/connect', '/api/v1/connect', '/servers/$serverId/connect'];
     Object? lastError = const VpnApiException('Нет API ключа');
     for (final ep in endpoints) {
       try {
@@ -166,7 +177,7 @@ class VpnApiClient {
       }
     }
     if (lastError is VpnApiException) throw lastError;
-    throw VpnApiException('Не удалось подключиться: ' + lastError.toString());
+    throw VpnApiException('Не удалось подключиться: $lastError');
   }
 
   /// Tell the provider to disconnect.
@@ -190,6 +201,6 @@ class VpnApiClient {
   String _friendlyAuthError(int code) {
     if (code == 401) return 'API ключ неверный (401). Проверь ключ.';
     if (code == 403) return 'API ключ не имеет доступа (403). Проверь права и тариф.';
-    return 'Ошибка авторизации (' + code.toString() + ').';
+    return 'Ошибка авторизации ($code).';
   }
 }
