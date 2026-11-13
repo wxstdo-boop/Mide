@@ -105,17 +105,23 @@ class _TabPillBar extends ConsumerStatefulWidget {
 
 class _TabPillBarState extends ConsumerState<_TabPillBar>
     with SingleTickerProviderStateMixin {
-  /// Tab value for the sliding pill: 0.0 = AGI, 1.0 = NPV, 2.0 = MEarn.
-  ///
-  /// The range extends past the controller's default [0, 1] upper bound, so we
-  /// raise `upperBound` to 2.0. Otherwise the value clamps to 1.0 and the
-  /// selection bubble / highlight can never leave the NPV pill — MEarn looks
-  /// "stuck on NPV" even though the tab is actually active.
+  /// Tab value for the sliding pill: 0 = AGI, 1 = NPV, 2 = MEarn, 3 = 3D,
+  /// 4 = Clip. The controller range extends to the last index (4.0) so the
+  /// selection bubble can travel across every pill. Kept in sync with
+  /// [_tabs] below.
   late final AnimationController _anim = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 480),
-    upperBound: 2.0,
+    upperBound: 4.0,
   );
+
+  static const _tabs = <_TabSpec>[
+    _TabSpec(icon: Icons.auto_awesome_rounded, label: 'AGI'),
+    _TabSpec(icon: Icons.shield_rounded, label: 'NPV'),
+    _TabSpec(icon: Icons.payments_rounded, label: 'Earn'),
+    _TabSpec(icon: Icons.view_in_ar_rounded, label: '3D'),
+    _TabSpec(icon: Icons.video_settings_rounded, label: 'Clip'),
+  ];
 
   @override
   void initState() {
@@ -135,7 +141,6 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
     super.dispose();
   }
 
-  static const _pillWidth = 88.0;
   static const _gap = 4.0;
 
   @override
@@ -147,122 +152,116 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
     });
     return SafeArea(
       top: false,
-      minimum: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                  color: scheme.outlineVariant.withValues(alpha: 0.6)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.10),
-                  blurRadius: 14,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: AnimatedBuilder(
-              animation: _anim,
-              builder: (context, _) {
-                final v = _anim.value;
-                const unit = _pillWidth + _gap;
-                // Each pill's foreground brightness: 1.0 when selected, 0 otherwise.
-                double pillBrightness(int i) =>
-                    (1.0 - (v - i).abs()).clamp(0.0, 1.0);
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // Sliding selection bubble.
-                    Transform.translate(
-                      offset: Offset(unit * v, 0),
-                      child: Container(
-                        width: _pillWidth,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: scheme.primary,
-                          borderRadius: BorderRadius.circular(999),
-                          boxShadow: [
-                            BoxShadow(
-                              color: scheme.primary.withValues(alpha: 0.35),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: _pillWidth,
-                          child: _TabPill(
-                            icon: Icons.auto_awesome_rounded,
-                            label: 'AGI',
-                            foreground: Color.lerp(
-                              scheme.onSurfaceVariant,
-                              scheme.onPrimary,
-                              pillBrightness(0),
-                            )!,
-                            onTap: () => _onTab(0),
-                          ),
-                        ),
-                        const SizedBox(width: _gap),
-                        SizedBox(
-                          width: _pillWidth,
-                          child: _TabPill(
-                            icon: Icons.shield_rounded,
-                            label: 'NPV',
-                            foreground: Color.lerp(
-                              scheme.onSurfaceVariant,
-                              scheme.onPrimary,
-                              pillBrightness(1),
-                            )!,
-                            onTap: () => _onTab(1),
-                          ),
-                        ),
-                        const SizedBox(width: _gap),
-                        SizedBox(
-                          width: _pillWidth,
-                          child: _TabPill(
-                            icon: Icons.payments_rounded,
-                            label: 'MEarn',
-                            foreground: Color.lerp(
-                              scheme.onSurfaceVariant,
-                              scheme.onPrimary,
-                              pillBrightness(2),
-                            )!,
-                            onTap: () => _onTab(2),
-                          ),
-                        ),
-                      ],
+      minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Fit all pills into the available width; drop the text label on
+          // narrow screens (icon-only) so nothing overflows.
+          final inner = constraints.maxWidth - 8 - _gap * (_tabs.length - 1);
+          final pillWidth = (inner / _tabs.length).clamp(50.0, 92.0);
+          final showLabel = pillWidth >= 76;
+          final unit = pillWidth + _gap;
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                      color: scheme.outlineVariant.withValues(alpha: 0.6)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.10),
+                      blurRadius: 14,
+                      offset: const Offset(0, 5),
                     ),
                   ],
-                );
-              },
-            ),
-          ),
-        ],
+                ),
+                child: AnimatedBuilder(
+                  animation: _anim,
+                  builder: (context, _) {
+                    final v = _anim.value;
+                    // Each pill's foreground brightness: 1.0 selected, 0 otherwise.
+                    double pillBrightness(int i) =>
+                        (1.0 - (v - i).abs()).clamp(0.0, 1.0);
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Sliding selection bubble.
+                        Transform.translate(
+                          offset: Offset(unit * v, 0),
+                          child: Container(
+                            width: pillWidth,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: scheme.primary,
+                              borderRadius: BorderRadius.circular(999),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: scheme.primary.withValues(alpha: 0.35),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (var i = 0; i < _tabs.length; i++) ...[
+                              if (i > 0) const SizedBox(width: _gap),
+                              SizedBox(
+                                width: pillWidth,
+                                child: _TabPill(
+                                  icon: _tabs[i].icon,
+                                  label: _tabs[i].label,
+                                  showLabel: showLabel,
+                                  foreground: Color.lerp(
+                                    scheme.onSurfaceVariant,
+                                    scheme.onPrimary,
+                                    pillBrightness(i),
+                                  )!,
+                                  onTap: () => _onTab(i),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
+}
+
+/// One bottom-bar destination: icon + short label.
+class _TabSpec {
+  const _TabSpec({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
 }
 
 class _TabPill extends StatelessWidget {
   const _TabPill({
     required this.icon,
     required this.label,
+    required this.showLabel,
     required this.foreground,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final bool showLabel;
   final Color foreground;
   final VoidCallback onTap;
 
@@ -272,6 +271,7 @@ class _TabPill extends StatelessWidget {
     // readers and the OS see "AGI"/"NPV" once instead of "AGI AGI".
     return Semantics(
       button: true,
+      label: showLabel ? null : label,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -284,15 +284,21 @@ class _TabPill extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(icon, size: 16, color: foreground),
-                const SizedBox(width: 5),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: foreground,
+                if (showLabel) ...[
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.clip,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: foreground,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

@@ -1,12 +1,15 @@
-// Active tab (0 = AGI, 1 = NPV, 2 = MEarn) — persisted so the app reopens
-// where you left off. The persisted value is resolved synchronously up-front
-// (see [AppTabNotifier.loadPersisted]) and handed to the notifier as a seed,
-// so the very first frame already shows the last-opened tab instead of
-// flashing NPV and then jumping.
+// Active tab (0 = AGI, 1 = NPV, 2 = MEarn, 3 = 3D, 4 = Studio) — persisted so
+// the app reopens where you left off. The persisted value is resolved
+// synchronously up-front (see [AppTabNotifier.loadPersisted]) and handed to
+// the notifier as a seed, so the very first frame already shows the
+// last-opened tab instead of flashing NPV and then jumping.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AppTabNotifier extends Notifier<int> {
+  /// Number of top-level tabs. Kept in sync with the pill bar in shell.dart.
+  static const int tabCount = 5;
+
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
@@ -21,7 +24,7 @@ class AppTabNotifier extends Notifier<int> {
     try {
       final raw = await _storage.read(key: _key);
       final v = int.tryParse(raw ?? '');
-      if (v != null && v >= 0 && v < 3) return v;
+      if (v != null && v >= 0 && v < tabCount) return v;
     } catch (_) {
       // Non-fatal.
     }

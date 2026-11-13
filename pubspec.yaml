@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  material_ui: ^1.11.0
   flutter_riverpod: ^2.5.1
   dynamic_color: ^1.7.0
   dio: ^5.4.3+1
@@ -22,6 +23,8 @@ dependencies:
   # On the Web platform it degrades to a status indicator only.
   wireguard_flutter_pro: ^0.1.2
   cryptography: ^2.9.0
+  ffmpeg_kit_flutter_new: ^4.6.8
+  video_player: ^2.14.1
 
 dev_dependencies:
   flutter_test:

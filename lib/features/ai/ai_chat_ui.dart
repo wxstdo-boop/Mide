@@ -8,7 +8,7 @@
 //   answer lands it cross-fades into the finished bubble.
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'ai_model.dart';
@@ -56,6 +56,19 @@ class _AiTabState extends ConsumerState<AiTab> {
     if (s.busy || text.trim().isEmpty) return;
     ref.read(aiSessionProvider.notifier).send(text);
     _input.clear();
+    _scrollToBottom();
+  }
+
+  /// Re-sends the most recent user message after a failure.
+  void _retry() {
+    final s = ref.read(aiSessionProvider);
+    if (s.busy) return;
+    final lastUser = s.messages.lastWhere(
+      (m) => m.role == AiRole.user,
+      orElse: () => const AiMessage(AiRole.user, ''),
+    );
+    if (lastUser.text.trim().isEmpty) return;
+    ref.read(aiSessionProvider.notifier).send(lastUser.text);
     _scrollToBottom();
   }
 
@@ -119,6 +132,14 @@ class _AiTabState extends ConsumerState<AiTab> {
                 const SizedBox(width: 8),
                 const _Badge(text: 'M.AI'),
                 const Spacer(),
+                _HeaderIconButton(
+                  icon: Icons.cleaning_services_rounded,
+                  tooltip: 'Очистить чат',
+                  onTap: s.messages.isEmpty && s.error == null
+                      ? null
+                      : () => notifier.clear(),
+                ),
+                const SizedBox(width: 4),
                 _TopicsButton(onTap: () => _showTopics(context)),
               ],
             ),
@@ -152,7 +173,11 @@ class _AiTabState extends ConsumerState<AiTab> {
                       controller: _scroll,
                       children: [
                         for (final m in s.messages) _AnimatedBubble(message: m),
-                        if (s.error != null) _AnimatedErrorCard(text: s.error!),
+                        if (s.error != null)
+                          _AnimatedErrorCard(
+                            text: s.error!,
+                            onRetry: _retry,
+                          ),
                       ],
                     ),
             ),
@@ -762,8 +787,9 @@ class _ThinkingCaretState extends State<_ThinkingCaret>
 
 class _AnimatedErrorCard extends StatefulWidget {
   final String text;
+  final VoidCallback? onRetry;
 
-  const _AnimatedErrorCard({required this.text});
+  const _AnimatedErrorCard({required this.text, this.onRetry});
 
   @override
   State<_AnimatedErrorCard> createState() => _AnimatedErrorCardState();
@@ -835,6 +861,13 @@ class _AnimatedErrorCardState extends State<_AnimatedErrorCard>
                   ],
                 ),
               ),
+              if (widget.onRetry != null)
+                IconButton(
+                  onPressed: widget.onRetry,
+                  tooltip: 'Повторить',
+                  icon: Icon(Icons.refresh_rounded,
+                      size: 20, color: scheme.onErrorContainer),
+                ),
             ],
           ),
         ),
@@ -1134,6 +1167,56 @@ class _SendStopButtonState extends State<_SendStopButton>
   }
 }
 
+
+// ── Header icon button ─────────────────────────────────────────────────────
+
+/// Compact tonal icon button for the AI header (clear chat, etc.). Dims
+/// itself and stops responding when [onTap] is null.
+class _HeaderIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  const _HeaderIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final enabled = onTap != null;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(999),
+          child: Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.6)),
+            ),
+            child: Icon(
+              icon,
+              size: 19,
+              color: enabled
+                  ? scheme.onSurfaceVariant
+                  : scheme.onSurfaceVariant.withValues(alpha: 0.35),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 // ── Topics menu ───────────────────────────────────────────────────────────
 

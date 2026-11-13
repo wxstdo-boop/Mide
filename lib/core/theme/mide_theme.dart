@@ -1,5 +1,5 @@
 // Mide theme — Material You (Material Design 3), driven by dynamic colors.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// App-specific semantic colors layered on top of the dynamic [ColorScheme].
 @immutable

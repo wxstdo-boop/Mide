@@ -1,6 +1,6 @@
 // IDE entry — real implementation for dart:io platforms (desktop, mobile).
 // The pill itself renders only on PC (see is_desktop); mobile gets a stub box.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'ide_screen.dart';
 import 'is_desktop.dart';

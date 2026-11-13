@@ -51,9 +51,16 @@ class AiSessionState {
       );
 }
 
-class AiSessionNotifier extends Notifier<AiSessionState> {
-  static const _systemPrompt =
+class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
+  /// Default Ada persona used by the AGI tab.
+  static const String adaSystemPrompt =
       'Ты — Ада. Отвечай максимально коротко (1–3 предложения), по делу, в языке пользователя.';
+
+  static const String adaChatKey = 'mide_ai_chat_v1';
+
+  /// Persona + tone instruction sent as the system message.
+  late String systemPrompt;
+  late String _chatKey;
 
   final OpenAiClient _client = OpenAiClient();
   CancelToken? _token;
@@ -67,11 +74,12 @@ class AiSessionNotifier extends Notifier<AiSessionState> {
   static const _chatStore = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
-  static const _chatKey = 'mide_ai_chat_v1';
   static const _maxMessages = 1000;
 
   @override
-  AiSessionState build() {
+  AiSessionState build(PersonaArg arg) {
+    systemPrompt = arg.systemPrompt;
+    _chatKey = arg.chatKey;
     ref.onDispose(() => _token?.cancel());
     _loadChat();
     return const AiSessionState();
@@ -143,6 +151,19 @@ class AiSessionNotifier extends Notifier<AiSessionState> {
     state = state.copyWith(busy: false, streaming: false);
   }
 
+  /// Wipes the conversation (and its persisted copy) for a fresh start.
+  Future<void> clear() async {
+    _cancelled = true;
+    _token?.cancel();
+    _token = null;
+    state = const AiSessionState();
+    try {
+      await _chatStore.delete(key: _chatKey);
+    } catch (_) {
+      // Best-effort: the in-memory session is already clean.
+    }
+  }
+
   void send(String question) {
     final text = question.trim();
     if (text.isEmpty || state.busy) return;
@@ -163,7 +184,7 @@ class AiSessionNotifier extends Notifier<AiSessionState> {
 
   List<Map<String, String>> _messages() {
     return [
-      {'role': 'system', 'content': _systemPrompt},
+      {'role': 'system', 'content': systemPrompt},
       ...state.messages
           .where((m) => m.text.isNotEmpty)
           .map((m) => {
@@ -285,8 +306,36 @@ class AiSessionNotifier extends Notifier<AiSessionState> {
   }
 }
 
-final aiSessionProvider =
-    NotifierProvider<AiSessionNotifier, AiSessionState>(AiSessionNotifier.new);
+/// Persona key for [personaSessionProvider]: a system prompt plus the storage
+/// key of the conversation it owns. Value-equal so Riverpod caches correctly.
+class PersonaArg {
+  const PersonaArg({required this.systemPrompt, required this.chatKey});
+
+  final String systemPrompt;
+  final String chatKey;
+
+  @override
+  bool operator ==(Object other) =>
+      other is PersonaArg &&
+      other.systemPrompt == systemPrompt &&
+      other.chatKey == chatKey;
+
+  @override
+  int get hashCode => Object.hash(systemPrompt, chatKey);
+}
+
+/// Factory for persona-specific chat sessions (e.g. the 3D companion tab).
+/// Each persona gets its own persisted conversation.
+final personaSessionProvider = NotifierProvider.family<AiSessionNotifier,
+    AiSessionState, PersonaArg>(AiSessionNotifier.new);
+
+/// The Ada (AGI) session — a concrete instance of [personaSessionProvider].
+final aiSessionProvider = personaSessionProvider(
+  const PersonaArg(
+    systemPrompt: AiSessionNotifier.adaSystemPrompt,
+    chatKey: AiSessionNotifier.adaChatKey,
+  ),
+);
 
 // ── Horde API key (free from stablehorde.net), persisted in secure storage ─
 

@@ -1,6 +1,9 @@
 // Mide — FOSS VPN client. Material You (M3) interface with "bloody" themes.
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'dart:math' as math;
+
+import 'package:file_picker/file_picker.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +12,12 @@ import 'core/nav/app_tab_provider.dart';
 import 'core/theme/mide_theme.dart';
 import 'core/theme/theme_providers.dart';
 import 'features/ai/ai_chat_ui.dart';
+import 'features/ai/ai_model.dart';
+import 'features/ai/ai_providers.dart';
+import 'features/clip/clip_export.dart';
+import 'features/clip/clip_models.dart';
+import 'features/clip/clip_providers.dart';
+import 'features/clip/preview/clip_player.dart';
 import 'features/vpn/providers/vpn_providers.dart';
 import 'features/updater/github_updater.dart';
 import 'features/updater/updater_types.dart';
@@ -17,6 +26,8 @@ import 'features/vpn/vpn_settings.dart';
 part 'app/shell.dart';
 part 'app/tabs/vpn_tab.dart';
 part 'app/tabs/mearn_tab.dart';
+part 'app/tabs/companion_tab.dart';
+part 'app/tabs/clip_studio_tab.dart';
 part 'app/pages/settings_page.dart';
 
 Future<void> main() async {
@@ -388,7 +399,9 @@ class _HomePageState extends ConsumerState<HomePage> {
             child: switch (tab) {
               0 => const AiTab(key: ValueKey('agi')),
               1 => const VpnTab(key: ValueKey('vpn')),
-              _ => const MEarnTab(key: ValueKey('mearn')),
+              2 => const MEarnTab(key: ValueKey('mearn')),
+              3 => const CompanionTab(key: ValueKey('companion')),
+              _ => const ClipStudioTab(key: ValueKey('clip')),
             },
           ),
         ),

@@ -161,17 +161,19 @@ void main() {
     expect(find.text('Mide'), findsOneWidget);
   });
 
-  testWidgets('bottom pills show all three tabs', (tester) async {
+  testWidgets('bottom pills show all five tabs', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: MideApp()));
     await tester.pump();
     // Clear the launch splash.
     await tester.pump(const Duration(milliseconds: 2900));
     await tester.pumpAndSettle();
 
-    // All three pills are visible.
+    // All five pills are visible.
     expect(find.text('AGI'), findsOneWidget);
     expect(find.text('NPV'), findsOneWidget);
-    expect(find.text('MEarn'), findsOneWidget);
+    expect(find.text('Earn'), findsOneWidget);
+    expect(find.text('3D'), findsOneWidget);
+    expect(find.text('Clip'), findsOneWidget);
   });
 
   testWidgets('VPN card offers only ON/OFF plus built-in servers',
@@ -208,10 +210,22 @@ void main() {
     expect(find.text('Ада'), findsOneWidget);
 
     // Switch to MEarn tab.
-    await tester.tap(find.text('MEarn'));
+    await tester.tap(find.text('Earn'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Kryptex'), findsOneWidget);
+
+    // Switch to the 3D companion tab.
+    await tester.tap(find.text('3D'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Мира'), findsOneWidget);
+
+    // Switch to the Clip Studio tab.
+    await tester.tap(find.text('Clip'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Clip Studio'), findsOneWidget);
 
     // Back to NPV tab: header is visible.
     await tester.tap(find.text('NPV'));

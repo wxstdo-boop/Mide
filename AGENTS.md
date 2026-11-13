@@ -54,17 +54,28 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
 ## Mide — build and layout
 
 - Flutter app (Dart 3.5+). Validate with `flutter analyze` and `flutter test`.
+- Material widgets come from `package:material_ui/material_ui.dart` (the
+  standalone Material library; `package:flutter/material.dart` is deprecated).
+  Import it directly in libraries, or rely on `main.dart`'s import for `part`s.
 - `lib/main.dart` is the app library: it holds the imports, the `main()`
   entry point, the splash/app shell and the `HomePage` navigation, and declares
-  four `part` files. Private widgets are shared across those parts (they are one
+  six `part` files. Private widgets are shared across those parts (they are one
   library), so add new sections as `part` files instead of standalone libraries
   when they reuse `_AppHeader`, `_SectionTitle`, `_Entrance`, etc.
-  - `lib/app/shell.dart` — header, pill nav, entrance animation.
+  - `lib/app/shell.dart` — header, pill nav (5 tabs), entrance animation.
   - `lib/app/tabs/vpn_tab.dart` — NPV section.
-  - `lib/app/tabs/mearn_tab.dart` — MEarn section.
+  - `lib/app/tabs/mearn_tab.dart` — Earn section.
+  - `lib/app/tabs/companion_tab.dart` — 3D companion («Мира») section.
+  - `lib/app/tabs/clip_studio_tab.dart` — Clip Studio (video editor) section.
   - `lib/app/pages/settings_page.dart` — settings, theme carousel, setup, updater.
 - `lib/core/` — theme (Material You) and the persisted active-tab state.
-- `lib/features/{ai,ide,updater,vpn}/` — feature code; platform-split files use
-  the `_io.dart` / `_stub.dart` (or `_web.dart`) conditional-export pattern.
+- `lib/features/{ai,clip,ide,updater,vpn}/` — feature code; platform-split files
+  use the `_io.dart` / `_stub.dart` (or `_web.dart`) conditional-export pattern.
+  - `features/ai` — Ada chat; personas are Riverpod families keyed by
+    `PersonaArg` (system prompt + storage key), so each persona keeps its own
+    persisted conversation. `aiSessionProvider` is the Ada instance.
+  - `features/clip` — Clip Studio. `clip_models.dart` / `clip_ffmpeg.dart` are
+    pure and unit-tested; `clip_export_io.dart` is the only FFmpeg/filesystem
+    touchpoint and is behind the `clip_export.dart` conditional facade.
 - Tests live under `test/features/...` mirroring `lib/features/...`; pure logic
   is unit-tested, the IDE notifiers are tested against a temp directory.
