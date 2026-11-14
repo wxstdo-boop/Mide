@@ -68,6 +68,11 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
   /// Last slot in [allSlots] that actually answered.
   int _lastSlot = 0;
 
+  /// Provider indices that failed with an auth error (401/403) in this
+  /// session — they will not recover without a key, so later requests skip
+  /// them instead of burning a slot on every message.
+  final Set<int> _authDeadProviders = <int>{};
+
   /// Chat persistence: the last 1000 messages survive app restarts so the
   /// conversation is never wiped when the app reopens.
   static const _chatStore = FlutterSecureStorage(
@@ -222,6 +227,12 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
       final idx = (_lastSlot + attempt) % slots.length;
       final slot = slots[idx];
       var provider = providers[slot.providerIndex];
+      // Skip providers that already returned an auth error this session, but
+      // re-enable Horde as soon as the user has supplied a key.
+      final hordeNowKeyed = provider.label == 'Horde' && hordeKey.isNotEmpty;
+      if (_authDeadProviders.contains(slot.providerIndex) && !hordeNowKeyed) {
+        continue;
+      }
       // Inject the user's persisted Horde key so the top provider actually
       // works once a free stablehorde.net key has been added.
       if (provider.label == 'Horde' && hordeKey.isNotEmpty) {
@@ -244,7 +255,12 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
         // Network-level failure — no point burning the whole rotation.
         _finish(errorText: aiBusyPhrase);
         return null;
-      } on LlmException {
+      } on LlmException catch (e) {
+        // Auth failures will not fix themselves without a key: remember the
+        // provider so later requests stop paying for it.
+        if (e.statusCode == 401 || e.statusCode == 403) {
+          _authDeadProviders.add(slot.providerIndex);
+        }
         // Per-slot failure — remember it and rotate to the next slot so
         // the next question starts past the broken provider/model instead
         // of waiting for the slow queue again.
