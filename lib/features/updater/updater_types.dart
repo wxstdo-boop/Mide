@@ -8,11 +8,17 @@ class UpdateAsset {
     required this.name,
     required this.url,
     this.sizeBytes = 0,
+    this.sha256,
   });
 
   final String name;
   final String url;
   final int sizeBytes;
+
+  /// Lowercase hex SHA-256 of the asset, when the release published one
+  /// (GitHub exposes it as `digest: "sha256:<hex>"`). Used to verify the
+  /// downloaded APK before handing it to the system installer.
+  final String? sha256;
 
   String get sizeMb {
     final mb = sizeBytes / (1024 * 1024);
@@ -151,9 +157,21 @@ UpdateAsset? androidArm64ApkFrom(List<dynamic> rawAssets) {
       name: name,
       url: url,
       sizeBytes: int.tryParse((item['size'] ?? '0').toString()) ?? 0,
+      sha256: _sha256FromDigest(item['digest']),
     );
   }
   return null;
+}
+
+/// Parses GitHub's `digest` field (`"sha256:<hex>"`) into a lowercase hex
+/// string, or null when absent/unrecognized.
+String? _sha256FromDigest(dynamic digest) {
+  final raw = digest?.toString().trim().toLowerCase();
+  if (raw == null || raw.isEmpty) return null;
+  const prefix = 'sha256:';
+  if (!raw.startsWith(prefix)) return null;
+  final hex = raw.substring(prefix.length);
+  return RegExp(r'^[0-9a-f]{64}$').hasMatch(hex) ? hex : null;
 }
 
 /// Best-effort "what platform am I on" label, used to pick a release asset

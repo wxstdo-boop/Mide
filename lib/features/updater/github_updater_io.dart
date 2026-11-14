@@ -5,6 +5,7 @@
 // * launch:   opens the downloaded APK in Android's system installer.
 import 'dart:io' as io;
 
+import 'package:cryptography/cryptography.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -122,6 +123,15 @@ class GithubUpdater {
       return UpdateCheckResult.failure('Файл не сохранился');
     }
 
+    if (!await _verifyDigest(asset, target)) {
+      try {
+        io.File(target).deleteSync();
+      } catch (_) {}
+      return UpdateCheckResult.failure(
+        'Проверка SHA-256 не прошла — файл повреждён или подменён',
+      );
+    }
+
     if (io.Platform.isAndroid && asset.name.toLowerCase().endsWith('.apk')) {
       await _installerChannel.invokeMethod<void>('installApk', {
         'path': target,
@@ -130,6 +140,25 @@ class GithubUpdater {
       await _launch(target, asset.name);
     }
     return UpdateCheckResult.installerOpened(source, target);
+  }
+
+  /// Verifies the downloaded file against the release's published SHA-256.
+  /// When the release carries no digest we cannot verify, so we allow it
+  /// (older releases) rather than blocking updates; a mismatching digest is
+  /// always fatal.
+  Future<bool> _verifyDigest(UpdateAsset asset, String path) async {
+    final expected = asset.sha256;
+    if (expected == null) return true;
+    final actual = await _sha256OfFile(path);
+    return actual == expected;
+  }
+
+  static Future<String> _sha256OfFile(String path) async {
+    final sink = Sha256().newHashSink();
+    await io.File(path).openRead().forEach(sink.add);
+    sink.close();
+    final digest = await sink.hash();
+    return digest.bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
   /// Web / unsupported: just open the release page.

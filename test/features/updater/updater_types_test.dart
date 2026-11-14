@@ -81,6 +81,39 @@ void main() {
       expect(asset?.name, 'mide-1.0.1-arm64-release.apk');
       expect(asset?.sizeBytes, 2048);
     });
+
+    test('captures a well-formed sha256 digest', () {
+      final hex = 'a' * 64;
+      final asset = androidArm64ApkFrom([
+        {
+          'name': 'mide-1.0.1-arm64-release.apk',
+          'browser_download_url': 'https://github.com/o/r/b.apk',
+          'digest': 'sha256:$hex',
+        },
+      ]);
+      expect(asset?.sha256, hex);
+    });
+
+    test('ignores a malformed digest', () {
+      final asset = androidArm64ApkFrom([
+        {
+          'name': 'mide-1.0.1-arm64-release.apk',
+          'browser_download_url': 'https://github.com/o/r/b.apk',
+          'digest': 'sha256:not-a-hash',
+        },
+      ]);
+      expect(asset?.sha256, isNull);
+    });
+
+    test('leaves sha256 null when the release publishes no digest', () {
+      final asset = androidArm64ApkFrom([
+        {
+          'name': 'mide-1.0.1-arm64-release.apk',
+          'browser_download_url': 'https://github.com/o/r/b.apk',
+        },
+      ]);
+      expect(asset?.sha256, isNull);
+    });
   });
 
   group('UpdateAsset.sizeMb', () {
