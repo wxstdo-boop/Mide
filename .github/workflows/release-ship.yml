@@ -45,10 +45,15 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
       - name: Pub get
         if: steps.tag.outputs.exists != 'true'
         run: flutter pub get
+
+      - name: Analyze
+        if: steps.tag.outputs.exists != 'true'
+        run: flutter analyze
 
       - name: Run Flutter tests
         if: steps.tag.outputs.exists != 'true'
@@ -85,6 +90,8 @@ jobs:
         run: |
           mv build/app/outputs/flutter-apk/app-release.apk \
              "mide-${{ steps.version.outputs.value }}-arm64-release.apk"
+          sha256sum "mide-${{ steps.version.outputs.value }}-arm64-release.apk" \
+            | tee "mide-${{ steps.version.outputs.value }}-arm64-release.apk.sha256"
           ls -lh
 
       - name: Create GitHub Release
@@ -97,4 +104,6 @@ jobs:
           prerelease: false
           generate_release_notes: true
           token: ${{ github.token }}
-          files: mide-${{ steps.version.outputs.value }}-arm64-release.apk
+          files: |
+            mide-${{ steps.version.outputs.value }}-arm64-release.apk
+            mide-${{ steps.version.outputs.value }}-arm64-release.apk.sha256
