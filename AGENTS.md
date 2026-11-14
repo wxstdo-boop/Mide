@@ -99,3 +99,7 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
   `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`);
   the build fails fast if any are missing.
 - Both workflows pin `FLUTTER_VERSION` so CI and releases share one toolchain.
+- Both workflows pin JDK 21 (`actions/setup-java`). AGP 9.3.1's lint crashes
+  with a `NoSuchMethodError` in `JavaDocParser` on JDK 17, and that lint only
+  runs for release builds (`lintVitalAnalyzeRelease`), so the debug APK CI job
+  will not catch it — keep the JDK pin at 21.
