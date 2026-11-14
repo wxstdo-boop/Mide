@@ -15,7 +15,11 @@ class IdeFsNode {
   final String path;
   final bool isDir;
 
-  const IdeFsNode({required this.name, required this.path, required this.isDir});
+  const IdeFsNode({
+    required this.name,
+    required this.path,
+    required this.isDir,
+  });
 }
 
 /// Directories never shown in the tree — build noise, not user code.
@@ -86,15 +90,14 @@ class IdeWorkspaceState {
     bool? loading,
     String? error,
     bool clearError = false,
-  }) =>
-      IdeWorkspaceState(
-        root: clearRoot ? null : (root ?? this.root),
-        children: children ?? this.children,
-        expanded: expanded ?? this.expanded,
-        selected: clearSelected ? null : (selected ?? this.selected),
-        loading: loading ?? this.loading,
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => IdeWorkspaceState(
+    root: clearRoot ? null : (root ?? this.root),
+    children: children ?? this.children,
+    expanded: expanded ?? this.expanded,
+    selected: clearSelected ? null : (selected ?? this.selected),
+    loading: loading ?? this.loading,
+    error: clearError ? null : (error ?? this.error),
+  );
 }
 
 class IdeWorkspaceNotifier extends Notifier<IdeWorkspaceState> {
@@ -157,10 +160,10 @@ class IdeWorkspaceNotifier extends Notifier<IdeWorkspaceState> {
   void closeFolder() => state = const IdeWorkspaceState();
 
   void select(String? path) => state = state.copyWith(
-        selected: path ?? '',
-        clearSelected: path == null,
-        clearError: true,
-      );
+    selected: path ?? '',
+    clearSelected: path == null,
+    clearError: true,
+  );
 
   /// Toggles (or forces) expansion of a directory; first expand loads it.
   void toggle(String path, {bool? expand}) {
@@ -171,8 +174,11 @@ class IdeWorkspaceNotifier extends Notifier<IdeWorkspaceState> {
       if (!state.children.containsKey(path)) {
         final children = Map<String, List<IdeFsNode>>.from(state.children);
         children[path] = _readDir(path);
-        state =
-            state.copyWith(expanded: expanded, children: children, clearError: true);
+        state = state.copyWith(
+          expanded: expanded,
+          children: children,
+          clearError: true,
+        );
         return;
       }
     } else {
@@ -276,10 +282,19 @@ class IdeWorkspaceNotifier extends Notifier<IdeWorkspaceState> {
     }
     // Drop the node and every cached child of a removed directory.
     final children = Map<String, List<IdeFsNode>>.from(state.children)
-      ..removeWhere((k, _) => k == path || k.startsWith('$path\\') || k.startsWith('$path/'));
+      ..removeWhere(
+        (k, _) =>
+            k == path || k.startsWith('$path\\') || k.startsWith('$path/'),
+      );
     final expanded = Set<String>.from(state.expanded)
-      ..removeWhere((p) => p == path || p.startsWith('$path\\') || p.startsWith('$path/'));
-    state = state.copyWith(children: children, expanded: expanded, clearSelected: true);
+      ..removeWhere(
+        (p) => p == path || p.startsWith('$path\\') || p.startsWith('$path/'),
+      );
+    state = state.copyWith(
+      children: children,
+      expanded: expanded,
+      clearSelected: true,
+    );
     _reloadDir(ideParentOf(path));
     return null;
   }
@@ -308,11 +323,11 @@ class IdeTab {
   bool get dirty => content != saved;
 
   IdeTab copyWith({String? content, String? saved}) => IdeTab(
-        path: path,
-        name: name,
-        content: content ?? this.content,
-        saved: saved ?? this.saved,
-      );
+    path: path,
+    name: name,
+    content: content ?? this.content,
+    saved: saved ?? this.saved,
+  );
 }
 
 class IdeTabsState {
@@ -321,14 +336,13 @@ class IdeTabsState {
 
   const IdeTabsState({this.tabs = const [], this.active = 0});
 
-  IdeTab? get activeTab => tabs.isEmpty ? null : tabs[active.clamp(0, tabs.length - 1)];
+  IdeTab? get activeTab =>
+      tabs.isEmpty ? null : tabs[active.clamp(0, tabs.length - 1)];
 
   int indexOfPath(String path) => tabs.indexWhere((t) => t.path == path);
 
-  IdeTabsState copyWith({List<IdeTab>? tabs, int? active}) => IdeTabsState(
-        tabs: tabs ?? this.tabs,
-        active: active ?? this.active,
-      );
+  IdeTabsState copyWith({List<IdeTab>? tabs, int? active}) =>
+      IdeTabsState(tabs: tabs ?? this.tabs, active: active ?? this.active);
 }
 
 // ── Tabs notifier ──────────────────────────────────────────────────────────
@@ -391,10 +405,7 @@ class IdeTabsNotifier extends Notifier<IdeTabsState> {
     final i = state.indexOfPath(path);
     if (i < 0) return;
     final tabs = [...state.tabs];
-    tabs[i] = tabs[i].copyWith(
-      content: text,
-      saved: markSaved ? text : null,
-    );
+    tabs[i] = tabs[i].copyWith(content: text, saved: markSaved ? text : null);
     state = state.copyWith(tabs: tabs);
   }
 
@@ -446,12 +457,11 @@ class IdeConsoleState {
     bool? running,
     String? runningPath,
     bool clearRunningPath = false,
-  }) =>
-      IdeConsoleState(
-        lines: lines ?? this.lines,
-        running: running ?? this.running,
-        runningPath: clearRunningPath ? null : (runningPath ?? this.runningPath),
-      );
+  }) => IdeConsoleState(
+    lines: lines ?? this.lines,
+    running: running ?? this.running,
+    runningPath: clearRunningPath ? null : (runningPath ?? this.runningPath),
+  );
 }
 
 /// Executable + args attempt for one runner candidate.
@@ -500,7 +510,9 @@ class IdeConsoleNotifier extends Notifier<IdeConsoleState> {
 
     switch (ext) {
       case '.dart':
-        return _RunPlan('dart', [_RunAttempt(exe('dart'), [file])]);
+        return _RunPlan('dart', [
+          _RunAttempt(exe('dart'), [file]),
+        ]);
       case '.py':
         final first = exe('python');
         return _RunPlan('python', [
@@ -510,20 +522,31 @@ class IdeConsoleNotifier extends Notifier<IdeConsoleState> {
         ]);
       case '.js':
       case '.mjs':
-        return _RunPlan('node', [_RunAttempt(exe('node'), [file])]);
+        return _RunPlan('node', [
+          _RunAttempt(exe('node'), [file]),
+        ]);
       case '.ps1':
         final pwsh = exe('pwsh');
-        final common =
-            ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', file];
+        final common = [
+          '-NoProfile',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-File',
+          file,
+        ];
         return _RunPlan('powershell', [
           _RunAttempt(pwsh, common),
           if (pwsh != 'powershell') const _RunAttempt('powershell', []),
         ]);
       case '.bat':
       case '.cmd':
-        return _RunPlan('cmd', [_RunAttempt('cmd', ['/c', file])]);
+        return _RunPlan('cmd', [
+          _RunAttempt('cmd', ['/c', file]),
+        ]);
       case '.sh':
-        return _RunPlan('bash', [_RunAttempt('bash', [file])]);
+        return _RunPlan('bash', [
+          _RunAttempt('bash', [file]),
+        ]);
       default:
         return null;
     }
@@ -534,8 +557,10 @@ class IdeConsoleNotifier extends Notifier<IdeConsoleState> {
     if (state.running) return;
     final plan = _planFor(file, ref.read(ideToolsProvider));
     if (plan == null) {
-      _append('[❌] Нет раннера для «${_ideExt(file)}» — работают dart, py, '
-          'js, ps1, bat, sh');
+      _append(
+        '[❌] Нет раннера для «${_ideExt(file)}» — работают dart, py, '
+        'js, ps1, bat, sh',
+      );
       return;
     }
 
@@ -555,28 +580,26 @@ class IdeConsoleNotifier extends Notifier<IdeConsoleState> {
       }
     }
     if (proc == null) {
-      _append('[❌] Не найден «$lastMissing» — добавь в PATH или укажи путь '
-          'в ⚙ Инструменты');
+      _append(
+        '[❌] Не найден «$lastMissing» — добавь в PATH или укажи путь '
+        'в ⚙ Инструменты',
+      );
       return;
     }
 
     _proc = proc;
     final gen = ++_generation;
     state = state.copyWith(running: true, runningPath: file);
-    _append('[▶] ${plan.attempts.first.exec} '
-        '${plan.attempts.first.args.join(' ')}');
+    _append(
+      '[▶] ${plan.attempts.first.exec} '
+      '${plan.attempts.first.args.join(' ')}',
+    );
 
     void hook(Stream<List<int>> stream, {bool err = false}) {
-      utf8.decoder
-          .bind(stream)
-          .transform(const LineSplitter())
-          .listen(
-        (line) {
-          if (gen != _generation) return;
-          _append(err ? '[stderr] $line' : line);
-        },
-        onError: (_) {},
-      );
+      utf8.decoder.bind(stream).transform(const LineSplitter()).listen((line) {
+        if (gen != _generation) return;
+        _append(err ? '[stderr] $line' : line);
+      }, onError: (_) {});
     }
 
     hook(proc.stdout);
@@ -636,11 +659,13 @@ class IdeToolsNotifier extends Notifier<IdeToolsState> {
       if (raw == null || raw.isEmpty) return;
       final decoded = jsonDecode(raw);
       if (decoded is Map) {
-        state = IdeToolsState(paths: {
-          for (final e in decoded.entries)
-            if (e.key is String && e.value is String)
-              e.key as String: e.value as String,
-        });
+        state = IdeToolsState(
+          paths: {
+            for (final e in decoded.entries)
+              if (e.key is String && e.value is String)
+                e.key as String: e.value as String,
+          },
+        );
       }
     } catch (_) {
       // Non-fatal: default to PATH lookups.
@@ -662,18 +687,18 @@ class IdeToolsNotifier extends Notifier<IdeToolsState> {
 
 final ideWorkspaceProvider =
     NotifierProvider<IdeWorkspaceNotifier, IdeWorkspaceState>(
-        IdeWorkspaceNotifier.new);
+      IdeWorkspaceNotifier.new,
+    );
 
-final ideTabsProvider =
-    NotifierProvider<IdeTabsNotifier, IdeTabsState>(IdeTabsNotifier.new);
+final ideTabsProvider = NotifierProvider<IdeTabsNotifier, IdeTabsState>(
+  IdeTabsNotifier.new,
+);
 
 final ideConsoleProvider =
     NotifierProvider<IdeConsoleNotifier, IdeConsoleState>(
-        IdeConsoleNotifier.new);
+      IdeConsoleNotifier.new,
+    );
 
-final ideToolsProvider =
-    NotifierProvider<IdeToolsNotifier, IdeToolsState>(IdeToolsNotifier.new);
-
-
-
-
+final ideToolsProvider = NotifierProvider<IdeToolsNotifier, IdeToolsState>(
+  IdeToolsNotifier.new,
+);

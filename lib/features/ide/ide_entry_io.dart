@@ -19,9 +19,8 @@ class IdeEntryPill extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => const IdeScreen()),
-        ),
+        onTap: () => Navigator.of(context)
+            .push(MaterialPageRoute<void>(builder: (_) => const IdeScreen())),
         borderRadius: BorderRadius.circular(22),
         child: Container(
           width: double.infinity,
@@ -67,8 +66,11 @@ class IdeEntryPill extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.code_rounded,
-                    color: Colors.white, size: 24),
+                child: const Icon(
+                  Icons.code_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -89,7 +91,9 @@ class IdeEntryPill extends StatelessWidget {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: scheme.tertiaryContainer,
                             borderRadius: BorderRadius.circular(999),
@@ -119,8 +123,11 @@ class IdeEntryPill extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded,
-                  color: scheme.onSurfaceVariant, size: 26),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: scheme.onSurfaceVariant,
+                size: 26,
+              ),
             ],
           ),
         ),

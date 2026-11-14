@@ -119,7 +119,9 @@ List<String> buildClipArgs(
 
   // --- filter graph -------------------------------------------------------
   final vSrc = isAudio ? '[$colorInput:v]' : '[0:v]';
-  final aSrc = (isImage || isAudio || clip.muted) ? '[$silenceInput:a]' : '[0:a]';
+  final aSrc = (isImage || isAudio || clip.muted)
+      ? '[$silenceInput:a]'
+      : '[0:a]';
 
   final vChain = <String>[
     _fit(canvas),
@@ -168,19 +170,19 @@ List<String> buildClipArgs(
 /// Args to concatenate the normalised intermediates into the final file.
 /// [listPath] is a concat-demuxer list file written by the caller.
 List<String> buildConcatArgs(String listPath, String outputPath) => <String>[
-      '-y',
-      '-f',
-      'concat',
-      '-safe',
-      '0',
-      '-i',
-      listPath,
-      '-c',
-      'copy',
-      '-movflags',
-      '+faststart',
-      outputPath,
-    ];
+  '-y',
+  '-f',
+  'concat',
+  '-safe',
+  '0',
+  '-i',
+  listPath,
+  '-c',
+  'copy',
+  '-movflags',
+  '+faststart',
+  outputPath,
+];
 
 /// Body of the concat-demuxer list file. Single quotes in a path are escaped
 /// as `'\''` per the demuxer's rules.

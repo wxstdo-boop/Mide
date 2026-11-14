@@ -11,8 +11,7 @@ class MEarnTab extends StatelessWidget {
     _EarnCardData(
       icon: Icons.quiz_rounded,
       title: 'Анкетка',
-      subtitle:
-          'Проходи опросы — получаешь рубли на карту. Простой заработок без вложений',
+      subtitle: 'Проходи опросы — получаешь рубли на карту. Простой заработок без вложений',
       url: 'https://anketka.ru',
       gradient: [Color(0xFFE91E63), Color(0xFF9C27B0)],
     ),
@@ -98,10 +97,7 @@ class MEarnTab extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Открой сервис, подключи — и капает пассивно',
-              style: TextStyle(
-                fontSize: 13,
-                color: scheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
             ..._cards.map((c) => _EarnCard(data: c)),
@@ -211,11 +207,7 @@ class _EarnCard extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(
-                    data.icon,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: Icon(data.icon, color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 16),
                 // Text.

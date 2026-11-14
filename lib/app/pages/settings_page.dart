@@ -28,15 +28,15 @@ class SettingsPage extends ConsumerWidget {
                       children: [
                         Text(
                           'Настройки',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
+                          style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         Text(
                           'Тема и обновления',
                           style: TextStyle(
-                              fontSize: 13, color: scheme.onSurfaceVariant),
+                            fontSize: 13,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -162,15 +162,15 @@ class _SetupVpnPageState extends ConsumerState<SetupVpnPage> {
                       children: [
                         Text(
                           'Настройка VPN',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
+                          style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         Text(
                           'Подключение к провайдеру',
                           style: TextStyle(
-                              fontSize: 13, color: scheme.onSurfaceVariant),
+                            fontSize: 13,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -199,7 +199,8 @@ class _SetupVpnPageState extends ConsumerState<SetupVpnPage> {
                       ),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: scheme.primary.withValues(alpha: 0.25)),
+                        color: scheme.primary.withValues(alpha: 0.25),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -210,8 +211,10 @@ class _SetupVpnPageState extends ConsumerState<SetupVpnPage> {
                             color: scheme.primary,
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(Icons.rss_feed_rounded,
-                              color: scheme.onPrimary),
+                          child: Icon(
+                            Icons.rss_feed_rounded,
+                            color: scheme.onPrimary,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -336,8 +339,9 @@ class _SetupVpnPageState extends ConsumerState<SetupVpnPage> {
                       onPressed: _saving ? null : _clear,
                       icon: const Icon(Icons.delete_outline_rounded, size: 18),
                       label: const Text('Удалить ключ'),
-                      style:
-                          TextButton.styleFrom(foregroundColor: scheme.error),
+                      style: TextButton.styleFrom(
+                        foregroundColor: scheme.error,
+                      ),
                     ),
                   ),
                 ],
@@ -390,8 +394,10 @@ class _SectionTitle extends StatelessWidget {
               ),
               Text(
                 subtitle,
-                style:
-                    TextStyle(fontSize: 11.5, color: scheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 11.5,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -420,8 +426,9 @@ class _ThemeCarouselState extends ConsumerState<ThemeCarousel> {
     // (Without initialPage the view opens on page 0, so the checkmark and
     // the centered card could disagree — the reported "checkmark on dark,
     // display on light" bug.)
-    final initial =
-        MideThemeChoice.values.indexOf(ref.read(themeChoiceProvider));
+    final initial = MideThemeChoice.values.indexOf(
+      ref.read(themeChoiceProvider),
+    );
     _page = initial;
     _controller = PageController(viewportFraction: 0.86, initialPage: initial);
   }
@@ -445,9 +452,11 @@ class _ThemeCarouselState extends ConsumerState<ThemeCarousel> {
     if (choiceIndex != _page) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_controller.hasClients) return;
-        _controller.animateToPage(choiceIndex,
-            duration: const Duration(milliseconds: 480),
-            curve: Curves.easeInOutCubic);
+        _controller.animateToPage(
+          choiceIndex,
+          duration: const Duration(milliseconds: 480),
+          curve: Curves.easeInOutCubic,
+        );
         setState(() => _page = choiceIndex);
       });
     }
@@ -603,21 +612,27 @@ class _ThemeCard extends StatelessWidget {
                         color: selected ? scheme.primary : Colors.transparent,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color:
-                              selected ? scheme.primary : scheme.outlineVariant,
+                          color: selected
+                              ? scheme.primary
+                              : scheme.outlineVariant,
                         ),
                       ),
                       child: selected
-                          ? Icon(Icons.check_rounded,
-                              size: 16, color: scheme.onPrimary)
+                          ? Icon(
+                              Icons.check_rounded,
+                              size: 16,
+                              color: scheme.onPrimary,
+                            )
                           : null,
                     ),
                   ],
                 ),
                 const Spacer(),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: scheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(16),
@@ -628,7 +643,9 @@ class _ThemeCard extends StatelessWidget {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                            color: scheme.primary, shape: BoxShape.circle),
+                          color: scheme.primary,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -712,8 +729,9 @@ class _UpdateSectionState extends State<_UpdateSection> {
 
   Future<void> _openReleasePage() async {
     // openReleasePage falls back to the releases page when the link is null.
-    await githubUpdater
-        .openReleasePage(_result ?? UpdateCheckResult.noReleases());
+    await githubUpdater.openReleasePage(
+      _result ?? UpdateCheckResult.noReleases(),
+    );
   }
 
   @override
@@ -740,10 +758,10 @@ class _UpdateSectionState extends State<_UpdateSection> {
               _installing
                   ? 'Скачиваем и открываем установщик…'
                   : _checking
-                      ? 'Ищем новый релиз…'
-                      : res == null
-                          ? 'Проверить и обновить'
-                          : 'Проверить снова',
+                  ? 'Ищем новый релиз…'
+                  : res == null
+                  ? 'Проверить и обновить'
+                  : 'Проверить снова',
             ),
           ),
         ),
@@ -790,9 +808,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
         return const _ResultCard(
           icon: Icons.info_outline_rounded,
           title: 'Нет доступных релизов',
-          lines: [
-            'GitHub пока не вернул опубликованный релиз Mide',
-          ],
+          lines: ['GitHub пока не вернул опубликованный релиз Mide'],
         );
       case UpdateKind.noMatch:
         return _ResultCard(
@@ -897,8 +913,10 @@ class _ResultCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   l,
-                  style:
-                      TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),

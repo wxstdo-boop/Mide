@@ -52,10 +52,11 @@ void main() {
 
     test('returns an empty string without a private key or server key', () {
       expect(
-          WarpSource.buildConf({
-            'interface': {'addresses': {}}
-          }),
-          isEmpty);
+        WarpSource.buildConf({
+          'interface': {'addresses': {}},
+        }),
+        isEmpty,
+      );
       expect(
         WarpSource.buildConf({
           'interface': {
@@ -77,8 +78,10 @@ void main() {
     });
 
     test('returns null when there is no Endpoint line', () {
-      expect(WireguardEngine.parseEndpoint('[Interface]\nPrivateKey = x\n'),
-          isNull);
+      expect(
+        WireguardEngine.parseEndpoint('[Interface]\nPrivateKey = x\n'),
+        isNull,
+      );
     });
   });
 }

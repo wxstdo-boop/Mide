@@ -41,13 +41,13 @@ class LlmProvider {
   /// Returns a copy with a (possibly new) auth header. Used to inject the
   /// user's persisted Horde API key at runtime.
   LlmProvider withAuth(String? authHeader) => LlmProvider(
-        label: label,
-        baseUrl: baseUrl,
-        models: models,
-        authHeader: authHeader,
-        userAgent: userAgent,
-        chatPath: chatPath,
-      );
+    label: label,
+    baseUrl: baseUrl,
+    models: models,
+    authHeader: authHeader,
+    userAgent: userAgent,
+    chatPath: chatPath,
+  );
 
   /// True when this provider needs a key that hasn't been filled in yet
   /// (still the placeholder). The rotation fast-skips such providers.
@@ -59,17 +59,17 @@ class LlmProvider {
 
 class OpenAiClient {
   OpenAiClient({Dio? dio})
-      : _dio =
-            dio ??
-            Dio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 8),
-                // Queue-based providers (Horde) can stall. A tight receive
-                // timeout makes the rotation fall back to the next provider
-                // quickly instead of hanging for 25s per model.
-                receiveTimeout: const Duration(seconds: 15),
-              ),
-            );
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 8),
+              // Queue-based providers (Horde) can stall. A tight receive
+              // timeout makes the rotation fall back to the next provider
+              // quickly instead of hanging for 25s per model.
+              receiveTimeout: const Duration(seconds: 15),
+            ),
+          );
 
   final Dio _dio;
 
@@ -96,8 +96,10 @@ class OpenAiClient {
     // Fast skip: if the provider still carries the placeholder key
     // (needsKey == true), don't hit the network — rotate instantly.
     if (provider.needsKey) {
-      throw LlmException('$provider.label: нужен бесплатный ключ — пропускаю',
-          statusCode: 401);
+      throw LlmException(
+        '$provider.label: нужен бесплатный ключ — пропускаю',
+        statusCode: 401,
+      );
     }
 
     final Response<dynamic> response;
@@ -127,10 +129,7 @@ class OpenAiClient {
       // Horde budget check: if the response body mentions "budget",
       // treat as rotatable (move to next provider).
       if (response.statusCode == 429) {
-        throw LlmException(
-          '$provider.label: лимит исчерпан.',
-          statusCode: 429,
-        );
+        throw LlmException('$provider.label: лимит исчерпан.', statusCode: 429);
       }
       throw LlmException(
         _friendlyError(provider.label, response.statusCode, null),

@@ -29,6 +29,7 @@ const String kWarpSourceTag = '# mide-source: cloudflare-warp';
 class WarpSource {
   static const _regUrl = 'https://api.cloudflareclient.com/v0a2357/reg';
   static const _endpoint = 'engage.cloudflareclient.com:2408';
+
   /// WARP always uses an all-zero preshared key.
   static const _zeroPsk = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
 
@@ -38,21 +39,24 @@ class WarpSource {
     final conf = buildConf(await register());
     if (conf.isEmpty) {
       throw const FreeVpnException(
-          'Cloudflare вернул пустой конфиг — попробуй ещё раз');
+        'Cloudflare вернул пустой конфиг — попробуй ещё раз',
+      );
     }
     return conf;
   }
 
   static Future<Map<String, dynamic>> register() async {
     final (privB64, pubB64) = await _generateKeypair();
-    final dio = Dio(BaseOptions(
-      connectTimeout: const Duration(seconds: 12),
-      receiveTimeout: const Duration(seconds: 15),
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'okhttp/4.12.0',
-      },
-    ));
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 12),
+        receiveTimeout: const Duration(seconds: 15),
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'okhttp/4.12.0',
+        },
+      ),
+    );
     try {
       final res = await dio.post<dynamic>(
         _regUrl,
@@ -77,7 +81,8 @@ class WarpSource {
         return out;
       }
       throw const FreeVpnException(
-          'Cloudflare не выдал туннель (ответ без конфига)');
+        'Cloudflare не выдал туннель (ответ без конфига)',
+      );
     } on DioException catch (e) {
       throw FreeVpnException(_friendlyDioError(e, 'Cloudflare WARP'));
     } finally {
@@ -89,13 +94,15 @@ class WarpSource {
   static String buildConf(Map<String, dynamic> d) {
     final iface = Map<String, dynamic>.from(d['interface'] as Map);
     final peer = Map<String, dynamic>.from(
-        (d['peer'] ?? const <String, dynamic>{}) as Map);
-    final addrs =
-        Map<String, dynamic>.from((iface['addresses'] ?? const <String, dynamic>{}) as Map);
-    final allowed =
-        Map<String, dynamic>.from((peer['allowed_ips'] ?? const <String, dynamic>{}) as Map);
-    final serverPub =
-        (peer['public_key'] ?? d['key'] ?? '').toString();
+      (d['peer'] ?? const <String, dynamic>{}) as Map,
+    );
+    final addrs = Map<String, dynamic>.from(
+      (iface['addresses'] ?? const <String, dynamic>{}) as Map,
+    );
+    final allowed = Map<String, dynamic>.from(
+      (peer['allowed_ips'] ?? const <String, dynamic>{}) as Map,
+    );
+    final serverPub = (peer['public_key'] ?? d['key'] ?? '').toString();
     final v4 = (addrs['v4'] ?? '').toString();
     final v6 = (addrs['v6'] ?? '').toString();
     final private = (iface['private_key'] ?? '').toString();
@@ -129,8 +136,7 @@ class WarpSource {
 
   /// 8 chars, letters+digits only — Cloudflare rejects '-' and '_'.
   static String _randomFingerprint() {
-    const chars =
-        'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final r = Random.secure();
     return List.generate(8, (_) => chars[r.nextInt(chars.length)]).join();
   }

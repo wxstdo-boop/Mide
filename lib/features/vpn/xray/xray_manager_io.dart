@@ -31,15 +31,20 @@ class XrayNodeSource {
     int limit = 250,
     bool reality = false,
   }) async {
-    final dio = Dio(BaseOptions(
+    final dio = Dio(
+      BaseOptions(
         connectTimeout: const Duration(seconds: 12),
-        receiveTimeout: const Duration(seconds: 30)));
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
     Object? lastError;
     try {
       for (final url in _feeds) {
         try {
-          final res = await dio.get<String>(url,
-              options: Options(responseType: ResponseType.plain));
+          final res = await dio.get<String>(
+            url,
+            options: Options(responseType: ResponseType.plain),
+          );
           var nodes = (res.data ?? '')
               .split(RegExp(r'\r?\n'))
               .map(XrayNode.parse)
@@ -50,8 +55,10 @@ class XrayNodeSource {
             // carries it, and those nodes survive the DPI that kills the
             // Cloudflare-fronted ones.
             nodes = nodes
-                .where((n) =>
-                    n.security == 'reality' && (n.pbk?.isNotEmpty ?? false))
+                .where(
+                  (n) =>
+                      n.security == 'reality' && (n.pbk?.isNotEmpty ?? false),
+                )
                 .toList();
           }
           if (nodes.isNotEmpty) {
@@ -69,8 +76,7 @@ class XrayNodeSource {
             }
 
             nodes.sort((a, b) => rank(a).compareTo(rank(b)));
-            final head = nodes.take(60).toList()
-              ..shuffle(Random.secure());
+            final head = nodes.take(60).toList()..shuffle(Random.secure());
             return [...head, ...nodes.skip(60)].take(limit).toList();
           }
         } catch (e) {
@@ -81,13 +87,17 @@ class XrayNodeSource {
       dio.close(force: true);
     }
     throw XrayException(
-        'Не удалось получить список V2Nodes-узлов: ${lastError ?? 'нет сети'}');
+      'Не удалось получить список V2Nodes-узлов: ${lastError ?? 'нет сети'}',
+    );
   }
 
   static Future<bool> tcpAlive(XrayNode n, {int timeoutMs = 2500}) async {
     try {
-      final s = await Socket.connect(n.host, n.port,
-          timeout: Duration(milliseconds: timeoutMs));
+      final s = await Socket.connect(
+        n.host,
+        n.port,
+        timeout: Duration(milliseconds: timeoutMs),
+      );
       s.destroy();
       return true;
     } catch (_) {
@@ -107,19 +117,33 @@ class XrayNodeSource {
     late Socket raw;
     SecureSocket? s;
     try {
-      raw = await Socket.connect(n.host, n.port,
-          timeout: Duration(milliseconds: timeoutMs));
-      s = await SecureSocket.secure(raw,
-          host: n.sni ?? n.host, onBadCertificate: (_) => true);
-      s.add(utf8.encode('GET ${n.path.isEmpty ? '/' : n.path} HTTP/1.1\r\n'
+      raw = await Socket.connect(
+        n.host,
+        n.port,
+        timeout: Duration(milliseconds: timeoutMs),
+      );
+      s = await SecureSocket.secure(
+        raw,
+        host: n.sni ?? n.host,
+        onBadCertificate: (_) => true,
+      );
+      s.add(
+        utf8.encode(
+          'GET ${n.path.isEmpty ? '/' : n.path} HTTP/1.1\r\n'
           'Host: ${n.hostHeader ?? n.sni ?? n.host}\r\n'
           'Upgrade: websocket\r\nConnection: Upgrade\r\n'
           'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n'
-          'Sec-WebSocket-Version: 13\r\n\r\n'));
-      final first =
-          await s.take(1).first.timeout(Duration(milliseconds: timeoutMs));
+          'Sec-WebSocket-Version: 13\r\n\r\n',
+        ),
+      );
+      final first = await s
+          .take(1)
+          .first
+          .timeout(Duration(milliseconds: timeoutMs));
       final head = utf8.decode(first, allowMalformed: true);
-      final status = RegExp(r'^HTTP/1\.[01] (\d{3})').firstMatch(head)?.group(1);
+      final status = RegExp(r'^HTTP/1\.[01] (\d{3})')
+          .firstMatch(head)
+          ?.group(1);
       // 101 = the tunnel is real; anything else (429 = rate limited edge) is
       // not worth an xray spawn.
       return status == '101';
@@ -134,22 +158,27 @@ class XrayNodeSource {
 
   /// Screens [nodes] in parallel batches and returns the ones that completed
   /// a real handshake, best first.
-  static Future<List<XrayNode>> screen(List<XrayNode> nodes,
-      {int want = 4, int maxScan = 72}) async {
+  static Future<List<XrayNode>> screen(
+    List<XrayNode> nodes, {
+    int want = 4,
+    int maxScan = 72,
+  }) async {
     final out = <XrayNode>[];
     for (var i = 0; i < nodes.length && out.length < want && i < maxScan;) {
       final batch = nodes.sublist(i, (i + 24).clamp(0, nodes.length));
       i += batch.length;
-      final results = await Future.wait(batch.map((n) async {
-        try {
-          final ok = n.network == 'ws'
-              ? await handshakeAlive(n)
-              : await tcpAlive(n, timeoutMs: 2500);
-          return ok ? n : null;
-        } catch (_) {
-          return null;
-        }
-      }));
+      final results = await Future.wait(
+        batch.map((n) async {
+          try {
+            final ok = n.network == 'ws'
+                ? await handshakeAlive(n)
+                : await tcpAlive(n, timeoutMs: 2500);
+            return ok ? n : null;
+          } catch (_) {
+            return null;
+          }
+        }),
+      );
       out.addAll(results.whereType<XrayNode>());
     }
     return out;
@@ -207,9 +236,12 @@ class XrayManager {
     if (_exe.existsSync()) return;
     await _dir.create(recursive: true);
     final zip = File('${_dir.path}\\xray.zip');
-    final dio = Dio(BaseOptions(
+    final dio = Dio(
+      BaseOptions(
         connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(minutes: 5)));
+        receiveTimeout: const Duration(minutes: 5),
+      ),
+    );
     try {
       await dio.download(_releaseUrl, zip.path);
     } catch (e) {
@@ -217,8 +249,12 @@ class XrayManager {
     } finally {
       dio.close(force: true);
     }
-    final r = await Process.run(
-        'C:\\Windows\\System32\\tar.exe', ['-xf', zip.path, '-C', _dir.path]);
+    final r = await Process.run('C:\\Windows\\System32\\tar.exe', [
+      '-xf',
+      zip.path,
+      '-C',
+      _dir.path,
+    ]);
     if (r.exitCode != 0 || !_exe.existsSync()) {
       throw const XrayException('Не удалось распаковать ядро Xray');
     }
@@ -233,11 +269,15 @@ class XrayManager {
   /// elsewhere (v2rayN and friends) is never touched.
   Future<void> _reapStaleCore() async {
     try {
-      final ps = 'Get-CimInstance Win32_Process -Filter "Name=\'xray.exe\'" | '
+      final ps =
+          'Get-CimInstance Win32_Process -Filter "Name=\'xray.exe\'" | '
           "Where-Object { \$_.ExecutablePath -eq '${_exe.path}' } | "
           'ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }';
-      final r = await Process.run(
-          'powershell.exe', ['-NoProfile', '-Command', ps]);
+      final r = await Process.run('powershell.exe', [
+        '-NoProfile',
+        '-Command',
+        ps,
+      ]);
       if (r.exitCode == 0) {
         await Future.delayed(const Duration(milliseconds: 500));
       }
@@ -252,19 +292,24 @@ class XrayManager {
     if (_proc != null) return;
     if (!Platform.isWindows) {
       throw const XrayException(
-          'Xray-движок встроен для Windows; на телефоне — WARP');
+        'Xray-движок встроен для Windows; на телефоне — WARP',
+      );
     }
     await ensureCore();
     await _reapStaleCore();
     final nodes = await XrayNodeSource.fetch(reality: reality);
     // Parallel handshake screen first: one xray spawn costs seconds, and most
     // free nodes are rate-limited, so cheap rejection matters.
-    final live = await XrayNodeSource.screen(nodes,
-        want: maxTries, maxScan: reality ? 120 : 72);
+    final live = await XrayNodeSource.screen(
+      nodes,
+      want: maxTries,
+      maxScan: reality ? 120 : 72,
+    );
     if (live.isEmpty) {
       throw const XrayException(
-          'Бесплатные узлы V2Nodes сейчас перегружены или мертвы — '
-          'список обновляется каждые 15 минут, попробуй ещё раз');
+        'Бесплатные узлы V2Nodes сейчас перегружены или мертвы — '
+        'список обновляется каждые 15 минут, попробуй ещё раз',
+      );
     }
     String? lastReason;
     for (final n in live.take(maxTries)) {
@@ -276,9 +321,10 @@ class XrayManager {
       await _kill();
     }
     throw XrayException(
-        'Ни один из ${live.length} живых узлов не дал связь'
-        '${lastReason == null ? '' : ': $lastReason'} — '
-        'попробуй ещё раз через 15 минут');
+      'Ни один из ${live.length} живых узлов не дал связь'
+      '${lastReason == null ? '' : ': $lastReason'} — '
+      'попробуй ещё раз через 15 минут',
+    );
   }
 
   String? _lastSpawnError;
@@ -288,9 +334,11 @@ class XrayManager {
     await cfgFile.writeAsString(n.toJsonConfig());
     _lastSpawnError = null;
     final logs = StringBuffer();
-    final proc = await Process.start(
-        _exe.path, ['run', '-c', cfgFile.path],
-        workingDirectory: _dir.path);
+    final proc = await Process.start(_exe.path, [
+      'run',
+      '-c',
+      cfgFile.path,
+    ], workingDirectory: _dir.path);
     _proc = proc;
     var exited = false;
     proc.exitCode.then((c) {
@@ -368,8 +416,18 @@ class XrayManager {
     return m?.group(1)?.trim();
   }
 
-  Future<void> _writeValue(String name, String type, String data) => Process.run(
-      'reg.exe', ['add', _ikey, '/v', name, '/t', type, '/d', data, '/f']);
+  Future<void> _writeValue(String name, String type, String data) =>
+      Process.run('reg.exe', [
+        'add',
+        _ikey,
+        '/v',
+        name,
+        '/t',
+        type,
+        '/d',
+        data,
+        '/f',
+      ]);
 
   Future<void> _applySystemProxy() async {
     if (!_proxyApplied) {
@@ -386,8 +444,7 @@ class XrayManager {
 
   Future<void> _clearSystemProxy() async {
     if (!_proxyApplied) return;
-    await _writeValue(
-        'ProxyEnable', 'REG_DWORD', _prevProxyEnable ?? '0');
+    await _writeValue('ProxyEnable', 'REG_DWORD', _prevProxyEnable ?? '0');
     if (_prevProxyServer != null) {
       await _writeValue('ProxyServer', 'REG_SZ', _prevProxyServer!);
     }
@@ -401,11 +458,16 @@ class XrayManager {
   void _notifyWinInet() {
     try {
       final lib = ffi.DynamicLibrary.open('wininet.dll');
-      final setOption = lib.lookupFunction<
-          ffi.Int32 Function(ffi.IntPtr, ffi.Uint32, ffi.Pointer<ffi.Void>,
-              ffi.Uint32),
-          int Function(int, int, ffi.Pointer<ffi.Void>, int)>(
-          'InternetSetOptionW');
+      final setOption = lib
+          .lookupFunction<
+            ffi.Int32 Function(
+              ffi.IntPtr,
+              ffi.Uint32,
+              ffi.Pointer<ffi.Void>,
+              ffi.Uint32,
+            ),
+            int Function(int, int, ffi.Pointer<ffi.Void>, int)
+          >('InternetSetOptionW');
       const settingsChanged = 39;
       const refresh = 37;
       setOption(0, settingsChanged, ffi.nullptr, 0);

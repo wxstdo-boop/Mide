@@ -11,6 +11,5 @@ class GithubConfig {
 
   static String get path => '$owner/$repo';
 
-  static String get releasesPage =>
-      'https://github.com/$owner/$repo/releases';
+  static String get releasesPage => 'https://github.com/$owner/$repo/releases';
 }

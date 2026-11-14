@@ -13,9 +13,12 @@ class ClineAgentBackend {
   ClineAgentInfo? get info => null;
   Stream<ClineAgentEvent> get events => const Stream<ClineAgentEvent>.empty();
 
-  Future<ClineAgentInfo> start({required String workspace, String? nodePath}) async =>
-      throw const ClineAgentException(
-          'Полноценный агент работает только на ПК (нужен Node.js).');
+  Future<ClineAgentInfo> start({
+    required String workspace,
+    String? nodePath,
+  }) async => throw const ClineAgentException(
+    'Полноценный агент работает только на ПК (нужен Node.js).',
+  );
 
   Future<void> send(String message) async {}
   Future<void> approve(String id, bool ok) async {}

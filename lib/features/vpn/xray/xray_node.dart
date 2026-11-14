@@ -74,58 +74,62 @@ class XrayNode {
   /// Full xray config: node outbound + local SOCKS/HTTP inbounds +
   /// Russia-direct routing.
   Map<String, dynamic> buildConfig() => {
-        'inbounds': [
-          {
-            'tag': 'socks',
-            'port': socksPort,
-            'listen': '127.0.0.1',
-            'protocol': 'socks',
-            'settings': {'auth': 'noauth'},
-          },
-          {
-            'tag': 'http',
-            'port': httpPort,
-            'listen': '127.0.0.1',
-            'protocol': 'http',
-            'settings': {'timeout': 0},
-          },
-        ],
-        'outbounds': [
-          {
-            'protocol': 'vless',
-            'settings': {
-              'vnext': [
+    'inbounds': [
+      {
+        'tag': 'socks',
+        'port': socksPort,
+        'listen': '127.0.0.1',
+        'protocol': 'socks',
+        'settings': {'auth': 'noauth'},
+      },
+      {
+        'tag': 'http',
+        'port': httpPort,
+        'listen': '127.0.0.1',
+        'protocol': 'http',
+        'settings': {'timeout': 0},
+      },
+    ],
+    'outbounds': [
+      {
+        'protocol': 'vless',
+        'settings': {
+          'vnext': [
+            {
+              'address': host,
+              'port': port,
+              'users': [
                 {
-                  'address': host,
-                  'port': port,
-                  'users': [
-                    {
-                      'id': uuid,
-                      'encryption': 'none',
-                      if (flow != null) 'flow': flow,
-                    },
-                  ],
+                  'id': uuid,
+                  'encryption': 'none',
+                  if (flow != null) 'flow': flow,
                 },
               ],
             },
-            'streamSettings': streamSettings(),
-          },
-          {'protocol': 'freedom', 'tag': 'direct'},
-          {'protocol': 'blackhole', 'tag': 'block'},
-        ],
-        'routing': {
-          'domainStrategy': 'AsIs',
-          'rules': [
-            {'type': 'field', 'outboundTag': 'direct', 'ip': ['geoip:private']},
-            {
-              'type': 'field',
-              'outboundTag': 'direct',
-              'domain': ['geosite:category-ru'],
-            },
           ],
         },
-        'log': {'loglevel': 'warning'},
-      };
+        'streamSettings': streamSettings(),
+      },
+      {'protocol': 'freedom', 'tag': 'direct'},
+      {'protocol': 'blackhole', 'tag': 'block'},
+    ],
+    'routing': {
+      'domainStrategy': 'AsIs',
+      'rules': [
+        {
+          'type': 'field',
+          'outboundTag': 'direct',
+          'ip': ['geoip:private'],
+        },
+        {
+          'type': 'field',
+          'outboundTag': 'direct',
+          'domain': ['geosite:category-ru'],
+        },
+      ],
+    },
+    'log': {'loglevel': 'warning'},
+  };
 
   String toJsonConfig() => jsonEncode(buildConfig());
 

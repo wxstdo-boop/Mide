@@ -29,18 +29,36 @@ class _AiTabState extends ConsumerState<AiTab> {
   /// Topic presets that open in the "⋮" menu. Each one is a short,
   /// well-scoped prompt that gets injected into the composer on tap.
   static const _topics = <(String, IconData, String)>[
-    ('Прогнозы', Icons.trending_up_rounded,
-        'Сделай краткий прогноз: погода, курс валют, рынки — по существу, 2-3 строки.'),
-    ('Дизайн', Icons.palette_rounded,
-        'Предложи 3 идеи по дизайну (цвета, шрифт, компоновка) для мобильного приложения в стиле Material You.'),
-    ('Кулинария', Icons.restaurant_rounded,
-        'Придумай быстрый рецепт на 15 минут из простых продуктов. Калории и шаги.'),
-    ('Код', Icons.code_rounded,
-        'Напиши короткий, читаемый фрагмент кода (Dart/Flutter) с объяснением в 2 строки.'),
-    ('Фитнес', Icons.self_improvement_rounded,
-        'Дай 3-минутную тренировку без железа. Упражнения, подход, отдых.'),
-    ('Финансы', Icons.savings_rounded,
-        'Как быстро и реально сэкономить 500 руб в неделю? Практично, без воды.'),
+    (
+      'Прогнозы',
+      Icons.trending_up_rounded,
+      'Сделай краткий прогноз: погода, курс валют, рынки — по существу, 2-3 строки.',
+    ),
+    (
+      'Дизайн',
+      Icons.palette_rounded,
+      'Предложи 3 идеи по дизайну (цвета, шрифт, компоновка) для мобильного приложения в стиле Material You.',
+    ),
+    (
+      'Кулинария',
+      Icons.restaurant_rounded,
+      'Придумай быстрый рецепт на 15 минут из простых продуктов. Калории и шаги.',
+    ),
+    (
+      'Код',
+      Icons.code_rounded,
+      'Напиши короткий, читаемый фрагмент кода (Dart/Flutter) с объяснением в 2 строки.',
+    ),
+    (
+      'Фитнес',
+      Icons.self_improvement_rounded,
+      'Дай 3-минутную тренировку без железа. Упражнения, подход, отдых.',
+    ),
+    (
+      'Финансы',
+      Icons.savings_rounded,
+      'Как быстро и реально сэкономить 500 руб в неделю? Практично, без воды.',
+    ),
   ];
 
   @override
@@ -84,8 +102,7 @@ class _AiTabState extends ConsumerState<AiTab> {
         onPick: (prompt) {
           Navigator.pop(context);
           _input.text = prompt;
-          _input.selection =
-              TextSelection.collapsed(offset: prompt.length);
+          _input.selection = TextSelection.collapsed(offset: prompt.length);
           setState(() {});
         },
       ),
@@ -174,10 +191,7 @@ class _AiTabState extends ConsumerState<AiTab> {
                       children: [
                         for (final m in s.messages) _AnimatedBubble(message: m),
                         if (s.error != null)
-                          _AnimatedErrorCard(
-                            text: s.error!,
-                            onRetry: _retry,
-                          ),
+                          _AnimatedErrorCard(text: s.error!, onRetry: _retry),
                       ],
                     ),
             ),
@@ -236,8 +250,10 @@ class _ShimmerTitleState extends State<_ShimmerTitle>
         final s3 = center.clamp(0.0, 1.0);
         final s4 = (center + w * 0.45).clamp(0.0, 1.0);
         final s5 = (center + w).clamp(0.0, 1.0);
-        final gloss =
-            Color.alphaBlend(Colors.white.withValues(alpha: 0.85), red);
+        final gloss = Color.alphaBlend(
+          Colors.white.withValues(alpha: 0.85),
+          red,
+        );
         return ShaderMask(
           blendMode: BlendMode.srcIn,
           shaderCallback: (b) => LinearGradient(
@@ -344,8 +360,11 @@ class _ProviderBadge extends StatelessWidget {
                 color: scheme.primary,
                 borderRadius: BorderRadius.circular(7),
               ),
-              child: Icon(Icons.smart_toy_rounded,
-                  size: 14, color: scheme.onPrimary),
+              child: Icon(
+                Icons.smart_toy_rounded,
+                size: 14,
+                color: scheme.onPrimary,
+              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -392,10 +411,7 @@ class _HordeKeyButton extends ConsumerWidget {
                     scheme.primaryContainer,
                     scheme.primary.withValues(alpha: 0.55),
                   ]
-                : [
-                    scheme.surfaceContainerHighest,
-                    scheme.surfaceContainerHigh,
-                  ],
+                : [scheme.surfaceContainerHighest, scheme.surfaceContainerHigh],
           ),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
@@ -429,9 +445,7 @@ class _HordeKeyButton extends ConsumerWidget {
               child: Icon(
                 Icons.key_rounded,
                 size: 14,
-                color: keySet
-                    ? scheme.onPrimaryContainer
-                    : scheme.primary,
+                color: keySet ? scheme.onPrimaryContainer : scheme.primary,
               ),
             ),
             const SizedBox(width: 8),
@@ -465,8 +479,9 @@ class _HordeKeyButton extends ConsumerWidget {
       ),
       builder: (ctx) {
         return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -474,19 +489,21 @@ class _HordeKeyButton extends ConsumerWidget {
               Text(
                 'Horde API-ключ (бесплатно)',
                 style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: scheme.onSurface),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: scheme.onSurface,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
                 'Зарегистрируйся на stablehorde.net (без карты) и вставь ключ —\n'
-                    'Horde станет основным провайдером Ады.',
+                'Horde станет основным провайдером Ады.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 12.5,
-                    height: 1.4,
-                    color: scheme.onSurfaceVariant),
+                  fontSize: 12.5,
+                  height: 1.4,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 14),
               Padding(
@@ -525,8 +542,10 @@ class _HordeKeyButton extends ConsumerWidget {
                           ref.read(hordeKeyProvider.notifier).clear();
                           Navigator.pop(ctx);
                         },
-                        child: Text('Удалить',
-                            style: TextStyle(color: scheme.error)),
+                        child: Text(
+                          'Удалить',
+                          style: TextStyle(color: scheme.error),
+                        ),
                       ),
                     ),
                   ],
@@ -642,12 +661,18 @@ class _AnimatedBubble extends StatefulWidget {
 
 class _AnimatedBubbleState extends State<_AnimatedBubble>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-  late final Animation<double> _fade =
-      CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
-  late final Animation<double> _scale =
-      Tween<double>(begin: 0.94, end: 1.0).animate(_fade);
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 400),
+  );
+  late final Animation<double> _fade = CurvedAnimation(
+    parent: _c,
+    curve: Curves.easeOutCubic,
+  );
+  late final Animation<double> _scale = Tween<double>(
+    begin: 0.94,
+    end: 1.0,
+  ).animate(_fade);
 
   @override
   void initState() {
@@ -703,11 +728,12 @@ class _BubbleBody extends StatelessWidget {
   final String text;
   final ColorScheme scheme;
 
-  const _BubbleBody(
-      {super.key,
-      required this.isUser,
-      required this.text,
-      required this.scheme});
+  const _BubbleBody({
+    super.key,
+    required this.isUser,
+    required this.text,
+    required this.scheme,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -722,8 +748,7 @@ class _BubbleBody extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: isUser
             ? null
-            : Border.all(
-                color: scheme.outlineVariant.withValues(alpha: 0.4)),
+            : Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
       ),
       child: Text(
         text,
@@ -797,11 +822,14 @@ class _AnimatedErrorCard extends StatefulWidget {
 
 class _AnimatedErrorCardState extends State<_AnimatedErrorCard>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 350))
-        ..forward();
-  late final Animation<double> _fade =
-      CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 350),
+  )..forward();
+  late final Animation<double> _fade = CurvedAnimation(
+    parent: _c,
+    curve: Curves.easeOutCubic,
+  );
 
   @override
   void dispose() {
@@ -833,8 +861,11 @@ class _AnimatedErrorCardState extends State<_AnimatedErrorCard>
           ),
           child: Row(
             children: [
-              Icon(Icons.cloud_off_rounded,
-                  size: 20, color: scheme.onErrorContainer),
+              Icon(
+                Icons.cloud_off_rounded,
+                size: 20,
+                color: scheme.onErrorContainer,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -853,8 +884,7 @@ class _AnimatedErrorCardState extends State<_AnimatedErrorCard>
                       'Попробуй позже!',
                       style: TextStyle(
                         fontSize: 12.5,
-                        color:
-                            scheme.onErrorContainer.withValues(alpha: 0.85),
+                        color: scheme.onErrorContainer.withValues(alpha: 0.85),
                         height: 1.3,
                       ),
                     ),
@@ -865,8 +895,11 @@ class _AnimatedErrorCardState extends State<_AnimatedErrorCard>
                 IconButton(
                   onPressed: widget.onRetry,
                   tooltip: 'Повторить',
-                  icon: Icon(Icons.refresh_rounded,
-                      size: 20, color: scheme.onErrorContainer),
+                  icon: Icon(
+                    Icons.refresh_rounded,
+                    size: 20,
+                    color: scheme.onErrorContainer,
+                  ),
                 ),
             ],
           ),
@@ -1150,14 +1183,18 @@ class _SendStopButtonState extends State<_SendStopButton>
                 switchInCurve: Curves.easeInOut,
                 switchOutCurve: Curves.easeInOut,
                 child: widget.busy
-                    ? Icon(Icons.stop_rounded,
+                    ? Icon(
+                        Icons.stop_rounded,
                         key: const ValueKey('stop'),
                         size: 26,
-                        color: scheme.onError)
-                    : Icon(Icons.send_rounded,
+                        color: scheme.onError,
+                      )
+                    : Icon(
+                        Icons.send_rounded,
                         key: const ValueKey('send'),
                         size: 26,
-                        color: scheme.onPrimary),
+                        color: scheme.onPrimary,
+                      ),
               ),
             ],
           ),
@@ -1166,7 +1203,6 @@ class _SendStopButtonState extends State<_SendStopButton>
     );
   }
 }
-
 
 // ── Header icon button ─────────────────────────────────────────────────────
 
@@ -1202,7 +1238,8 @@ class _HeaderIconButton extends StatelessWidget {
               color: scheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                  color: scheme.outlineVariant.withValues(alpha: 0.6)),
+                color: scheme.outlineVariant.withValues(alpha: 0.6),
+              ),
             ),
             child: Icon(
               icon,
@@ -1257,7 +1294,11 @@ class _TopicsButton extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(Icons.more_horiz_rounded, size: 20, color: scheme.primary),
+          child: Icon(
+            Icons.more_horiz_rounded,
+            size: 20,
+            color: scheme.primary,
+          ),
         ),
       ),
     );
@@ -1285,7 +1326,10 @@ class _TopicSheet extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [scheme.surfaceContainerHigh, scheme.surfaceContainerHighest],
+            colors: [
+              scheme.surfaceContainerHigh,
+              scheme.surfaceContainerHighest,
+            ],
           ),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(color: scheme.primary.withValues(alpha: 0.35)),
@@ -1453,4 +1497,3 @@ class _TopicRow extends StatelessWidget {
     );
   }
 }
-

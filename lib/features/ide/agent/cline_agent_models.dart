@@ -47,17 +47,16 @@ class ClineStep {
     String? result,
     bool? pending,
     bool? decided,
-  }) =>
-      ClineStep(
-        kind: kind,
-        text: text ?? this.text,
-        tool: tool,
-        args: args,
-        result: result ?? this.result,
-        pending: pending ?? this.pending,
-        approvalId: approvalId,
-        decided: decided ?? this.decided,
-      );
+  }) => ClineStep(
+    kind: kind,
+    text: text ?? this.text,
+    tool: tool,
+    args: args,
+    result: result ?? this.result,
+    pending: pending ?? this.pending,
+    approvalId: approvalId,
+    decided: decided ?? this.decided,
+  );
 }
 
 /// Event pushed by [ClineAgentBackend.events] while a run streams.

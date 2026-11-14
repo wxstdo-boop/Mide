@@ -21,20 +21,20 @@ void main() {
         },
         'peer': {
           'public_key': 'c2VydmVycHVi',
-          'endpoint': {
-            'v4': 'engage.cloudflareclient.com:2408',
-          },
+          'endpoint': {'v4': 'engage.cloudflareclient.com:2408'},
         },
       });
       expect(conf, contains('PrivateKey = aGF2ZXlhYnllbg=='));
       expect(
-          conf, contains('Address = 2606:4700:1234::5678/128, 172.16.0.5/32'));
+        conf,
+        contains('Address = 2606:4700:1234::5678/128, 172.16.0.5/32'),
+      );
       expect(conf, contains('PublicKey = c2VydmVycHVi'));
       expect(conf, contains('AllowedIPs = 0.0.0.0/0, ::/0'));
       expect(
-          conf,
-          contains(
-              'PresharedKey = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='));
+        conf,
+        contains('PresharedKey = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='),
+      );
     });
 
     test('rejects responses without keys', () {
@@ -78,8 +78,10 @@ void main() {
 
   group('ApiConnectResult.fromJson', () {
     test('reads ip and protocol', () {
-      final r =
-          ApiConnectResult.fromJson({'ip': '1.2.3.4', 'protocol': 'WireGuard'});
+      final r = ApiConnectResult.fromJson({
+        'ip': '1.2.3.4',
+        'protocol': 'WireGuard',
+      });
       expect(r.ipAddress, '1.2.3.4');
       expect(r.protocol, 'WireGuard');
     });
@@ -88,9 +90,10 @@ void main() {
   group('XrayNode.parse', () {
     test('parses a VLESS ws+tls link', () {
       final n = XrayNode.parse(
-          'vless://1b8a5f4c-2f9e-4d7a-9f3b-1c2d3e4f5a6b@104.17.148.22:443'
-          '?type=ws&security=tls&sni=cdncache.duckdns.org&path=%2Fv2ray'
-          '&host=www.speedtest.net&fp=chrome#NL%20%7C%20node1');
+        'vless://1b8a5f4c-2f9e-4d7a-9f3b-1c2d3e4f5a6b@104.17.148.22:443'
+        '?type=ws&security=tls&sni=cdncache.duckdns.org&path=%2Fv2ray'
+        '&host=www.speedtest.net&fp=chrome#NL%20%7C%20node1',
+      );
       expect(n, isNotNull);
       expect(n!.uuid, '1b8a5f4c-2f9e-4d7a-9f3b-1c2d3e4f5a6b');
       expect(n.host, '104.17.148.22');
@@ -110,30 +113,38 @@ void main() {
 
     test('builds xray JSON with inbounds and RU-direct routing', () {
       final n = XrayNode.parse(
-          'vless://u-i-d@h.example:443?type=tls&security=tls&sni=h.example')!;
+        'vless://u-i-d@h.example:443?type=tls&security=tls&sni=h.example',
+      )!;
       final cfg = jsonDecode(n.toJsonConfig()) as Map<String, dynamic>;
       final inbounds = cfg['inbounds'] as List;
-      expect(inbounds.map((i) => i['port']),
-          containsAll([XrayNode.socksPort, XrayNode.httpPort]));
+      expect(
+        inbounds.map((i) => i['port']),
+        containsAll([XrayNode.socksPort, XrayNode.httpPort]),
+      );
       final out = (cfg['outbounds'] as List).first as Map<String, dynamic>;
       expect(out['protocol'], 'vless');
       final rules = ((cfg['routing'] as Map)['rules'] as List)
           .cast<Map<String, dynamic>>();
       expect(
-          rules.any((r) =>
+        rules.any(
+          (r) =>
               r['domain'] is List &&
-              (r['domain'] as List).contains('geosite:category-ru')),
-          isTrue);
+              (r['domain'] as List).contains('geosite:category-ru'),
+        ),
+        isTrue,
+      );
       final ss = out['streamSettings'] as Map<String, dynamic>;
       expect(ss['tlsSettings'], isNotNull);
       expect((ss['tlsSettings'] as Map)['serverName'], 'h.example');
     });
 
     test('reality nodes carry their public key and fingerprint', () {
-      final n = XrayNode.parse('vless://u-i-d@1.2.3.4:443'
-          '?type=tcp&security=reality&sni=www.microsoft.com'
-          '&pbk=SdBpEKuLgLVZVPQFOXTBBnTLFJyLTsndWMJlBRZWBX0'
-          '&fp=chrome&sid=18e9ea38&flow=xtls-rprx-vision#DE')!;
+      final n = XrayNode.parse(
+        'vless://u-i-d@1.2.3.4:443'
+        '?type=tcp&security=reality&sni=www.microsoft.com'
+        '&pbk=SdBpEKuLgLVZVPQFOXTBBnTLFJyLTsndWMJlBRZWBX0'
+        '&fp=chrome&sid=18e9ea38&flow=xtls-rprx-vision#DE',
+      )!;
       expect(n.security, 'reality');
       expect(n.pbk, 'SdBpEKuLgLVZVPQFOXTBBnTLFJyLTsndWMJlBRZWBX0');
       expect(n.flow, 'xtls-rprx-vision');
@@ -176,8 +187,9 @@ void main() {
     expect(find.text('Clip'), findsOneWidget);
   });
 
-  testWidgets('VPN card offers only ON/OFF plus built-in servers',
-      (tester) async {
+  testWidgets('VPN card offers only ON/OFF plus built-in servers', (
+    tester,
+  ) async {
     await tester.pumpWidget(const ProviderScope(child: MideApp()));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 2900));

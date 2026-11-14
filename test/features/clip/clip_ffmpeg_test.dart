@@ -75,8 +75,10 @@ void main() {
       );
       final args = buildClipArgs(clip, canvas, 30, '/out/p.mp4');
       expect(args, containsAllInOrder(['-loop', '1']));
-      expect(args,
-          contains('anullsrc=channel_layout=stereo:sample_rate=48000'));
+      expect(
+        args,
+        contains('anullsrc=channel_layout=stereo:sample_rate=48000'),
+      );
       final fc = args[args.indexOf('-filter_complex') + 1];
       expect(fc, isNot(contains('atempo')));
     });
@@ -169,24 +171,36 @@ void main() {
       final c = make();
       final n = c.read(clipProjectProvider.notifier);
       n.addClips([clip('a'), clip('b'), clip('c')]);
-      expect(
-          c.read(clipProjectProvider).clips.map((e) => e.path), ['a', 'b', 'c']);
+      expect(c.read(clipProjectProvider).clips.map((e) => e.path), [
+        'a',
+        'b',
+        'c',
+      ]);
 
       n.reorder(0, 3); // ReorderableListView order: move a to the end
-      expect(
-          c.read(clipProjectProvider).clips.map((e) => e.path), ['b', 'c', 'a']);
+      expect(c.read(clipProjectProvider).clips.map((e) => e.path), [
+        'b',
+        'c',
+        'a',
+      ]);
 
       n.moveTo(0, 2); // already-adjusted target index: move b to the end
-      expect(
-          c.read(clipProjectProvider).clips.map((e) => e.path), ['c', 'a', 'b']);
+      expect(c.read(clipProjectProvider).clips.map((e) => e.path), [
+        'c',
+        'a',
+        'b',
+      ]);
 
       n.duplicateAt(0);
       expect(c.read(clipProjectProvider).clips.length, 4);
       expect(c.read(clipProjectProvider).clips[1].path, 'c');
 
       n.removeAt(0);
-      expect(
-          c.read(clipProjectProvider).clips.map((e) => e.path), ['c', 'a', 'b']);
+      expect(c.read(clipProjectProvider).clips.map((e) => e.path), [
+        'c',
+        'a',
+        'b',
+      ]);
 
       n.clear();
       expect(c.read(clipProjectProvider).isEmpty, isTrue);

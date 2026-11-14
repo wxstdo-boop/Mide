@@ -87,7 +87,10 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
     );
   }
 
-  Future<void> _createEntry({required bool asDir, required String parent}) async {
+  Future<void> _createEntry({
+    required bool asDir,
+    required String parent,
+  }) async {
     final name = await _promptName(asDir ? 'Новая папка' : 'Новый файл');
     if (name == null || name.trim().isEmpty) return;
     final ws = ref.read(ideWorkspaceProvider.notifier);
@@ -117,9 +120,11 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Удалить «${node.name}»?'),
-        content: Text(node.isDir
-            ? 'Папка и всё её содержимое будут удалены с диска.'
-            : 'Файл будет удалён с диска.'),
+        content: Text(
+          node.isDir
+              ? 'Папка и всё её содержимое будут удалены с диска.'
+              : 'Файл будет удалён с диска.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -127,7 +132,9 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
             child: const Text('Удалить'),
           ),
         ],
@@ -184,13 +191,16 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
             children: [
               // ── Toolbar ──
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: scheme.surfaceContainerLow,
                   border: Border(
                     bottom: BorderSide(
-                        color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                      color: scheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
                   ),
                 ),
                 child: Row(
@@ -198,8 +208,10 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
                     SizedBox(
                       width: 28,
                       height: 28,
-                      child: Image.asset('assets/icon/mide.png',
-                          fit: BoxFit.cover),
+                      child: Image.asset(
+                        'assets/icon/mide.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -214,7 +226,9 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: scheme.tertiaryContainer,
                         borderRadius: BorderRadius.circular(999),
@@ -269,8 +283,7 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
                       icon: Icons.menu_rounded,
                       tooltip: 'Файлы',
                       active: _treeVisible,
-                      onTap: () =>
-                          setState(() => _treeVisible = !_treeVisible),
+                      onTap: () => setState(() => _treeVisible = !_treeVisible),
                     ),
                     _TopBtn(
                       icon: Icons.terminal_rounded,
@@ -335,17 +348,13 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
                             ),
                           ),
                           if (_aiVisible)
-                            const SizedBox(
-                              width: 344,
-                              child: IdeAiPanel(),
-                            ),
+                            const SizedBox(width: 344, child: IdeAiPanel()),
                         ],
                       )
                     : _emptyWorkspace(context),
               ),
               // ── Status bar ──
               _buildStatusBar(context),
-
             ],
           ),
         ),
@@ -355,10 +364,7 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
 
   /// ⚙ interpreter paths dialog trigger.
   void _showToolsDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (_) => const _ToolsDialog(),
-    );
+    showDialog<void>(context: context, builder: (_) => const _ToolsDialog());
   }
 
   /// Welcome state: open a folder (picker or typed path) + feature chips.
@@ -377,15 +383,21 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
                 height: 92,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [
-                    scheme.primary.withValues(alpha: 0.22),
-                    scheme.primary.withValues(alpha: 0.03),
-                  ]),
-                  border:
-                      Border.all(color: scheme.primary.withValues(alpha: 0.4)),
+                  gradient: RadialGradient(
+                    colors: [
+                      scheme.primary.withValues(alpha: 0.22),
+                      scheme.primary.withValues(alpha: 0.03),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: scheme.primary.withValues(alpha: 0.4),
+                  ),
                 ),
-                child:
-                    Icon(Icons.folder_open_rounded, size: 42, color: scheme.primary),
+                child: Icon(
+                  Icons.folder_open_rounded,
+                  size: 42,
+                  color: scheme.primary,
+                ),
               ),
               const SizedBox(height: 20),
               Text(
@@ -403,9 +415,10 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
                 'и бесплатный кодинг-ИИ — только на ПК.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 13.5,
-                    height: 1.55,
-                    color: scheme.onSurfaceVariant),
+                  fontSize: 13.5,
+                  height: 1.55,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
@@ -413,8 +426,11 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
                 icon: const Icon(Icons.folder_open_rounded, size: 18),
                 label: const Text('Открыть папку…'),
                 style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 26, vertical: 16)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 26,
+                    vertical: 16,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               Row(
@@ -472,7 +488,10 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
           Text(
             'Выбери файл слева',
             style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w600, color: scheme.outline),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: scheme.outline,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -516,8 +535,11 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
           ),
           if (tab != null) ...[
             const SizedBox(width: 10),
-            Icon(Icons.insert_drive_file_outlined,
-                size: 12, color: scheme.onSurfaceVariant),
+            Icon(
+              Icons.insert_drive_file_outlined,
+              size: 12,
+              color: scheme.onSurfaceVariant,
+            ),
             const SizedBox(width: 5),
             Flexible(
               child: Text(
@@ -531,17 +553,20 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
               const SizedBox(width: 6),
               Icon(Icons.circle, size: 7, color: scheme.tertiary),
               const SizedBox(width: 3),
-              Text('не сохранено',
-                  style: TextStyle(fontSize: 11, color: scheme.tertiary)),
+              Text(
+                'не сохранено',
+                style: TextStyle(fontSize: 11, color: scheme.tertiary),
+              ),
             ],
           ],
           const Spacer(),
           Text(
             'Kilo · OVH · LLM7',
             style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: scheme.primary),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: scheme.primary,
+            ),
           ),
           const SizedBox(width: 8),
           Container(
@@ -553,9 +578,10 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
             child: Text(
               ai.providerLabel,
               style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: scheme.onSecondaryContainer),
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: scheme.onSecondaryContainer,
+              ),
             ),
           ),
         ],
@@ -589,13 +615,13 @@ class _TopBtn extends StatelessWidget {
     final bg = accent
         ? scheme.primary
         : active
-            ? scheme.primaryContainer
-            : Colors.transparent;
+        ? scheme.primaryContainer
+        : Colors.transparent;
     final fg = accent
         ? scheme.onPrimary
         : active
-            ? scheme.primary
-            : scheme.onSurfaceVariant;
+        ? scheme.primary
+        : scheme.onSurfaceVariant;
 
     final child = Material(
       color: bg,
@@ -647,8 +673,7 @@ class _FeatureChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(999),
-        border:
-            Border.all(color: scheme.primary.withValues(alpha: 0.30)),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.30)),
       ),
       child: Text(
         label,
@@ -718,8 +743,7 @@ class _ToolsDialogState extends ConsumerState<_ToolsDialog> {
           children: [
             Text(
               'Пустое поле = искать в PATH. Значения сохраняются локально.',
-              style: TextStyle(
-                  fontSize: 12.5, color: scheme.onSurfaceVariant),
+              style: TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 14),
             for (var i = 0; i < _fields.length; i++) ...[
@@ -732,9 +756,10 @@ class _ToolsDialogState extends ConsumerState<_ToolsDialog> {
                       child: Text(
                         _fields[i].$2,
                         style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
-                            color: scheme.onSurface),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
                       ),
                     ),
                     Expanded(
@@ -744,8 +769,10 @@ class _ToolsDialogState extends ConsumerState<_ToolsDialog> {
                         decoration: InputDecoration(
                           hintText: _fields[i].$3,
                           isDense: true,
-                          prefixIcon: const Icon(Icons.terminal_rounded,
-                              size: 16),
+                          prefixIcon: const Icon(
+                            Icons.terminal_rounded,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ),
@@ -779,8 +806,3 @@ class _ToolsDialogState extends ConsumerState<_ToolsDialog> {
     );
   }
 }
-
-
-
-
-

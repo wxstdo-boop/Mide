@@ -36,21 +36,27 @@ class _ClipStudioTabState extends ConsumerState<ClipStudioTab> {
         if (path == null) continue; // Web without a path: not supported yet.
         final probe = await clipExporter.probe(path);
         final isImage = _looksLikeImage(f.extension);
-        picked.add(ClipEdit(
-          path: path,
-          name: f.name,
-          kind: isImage ? ClipKind.image : probe.kind,
-          duration: isImage ? 3.0 : probe.duration,
-        ));
+        picked.add(
+          ClipEdit(
+            path: path,
+            name: f.name,
+            kind: isImage ? ClipKind.image : probe.kind,
+            duration: isImage ? 3.0 : probe.duration,
+          ),
+        );
       }
       if (picked.isEmpty) {
         _toast('Не удалось добавить файлы');
         return;
       }
       notifier.addClips(picked);
-      setState(() => _selected =
-          (ref.read(clipProjectProvider).clips.length - picked.length)
-              .clamp(0, 1 << 30));
+      setState(
+        () => _selected =
+            (ref.read(clipProjectProvider).clips.length - picked.length).clamp(
+              0,
+              1 << 30,
+            ),
+      );
     } catch (e) {
       _toast('Ошибка выбора файлов: $e');
     } finally {
@@ -65,9 +71,7 @@ class _ClipStudioTabState extends ConsumerState<ClipStudioTab> {
 
   void _toast(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   void _export() {
@@ -86,8 +90,9 @@ class _ClipStudioTabState extends ConsumerState<ClipStudioTab> {
     final exporter = ref.watch(clipExportProvider);
     final notifier = ref.read(clipProjectProvider.notifier);
     final clips = project.clips;
-    final selectedIndex =
-        clips.isEmpty ? -1 : _selected.clamp(0, clips.length - 1);
+    final selectedIndex = clips.isEmpty
+        ? -1
+        : _selected.clamp(0, clips.length - 1);
     final selected = selectedIndex >= 0 ? clips[selectedIndex] : null;
 
     return Scaffold(
@@ -132,8 +137,12 @@ class _ClipStudioTabState extends ConsumerState<ClipStudioTab> {
                     onMove: notifier.moveTo,
                     onRemove: (i) {
                       notifier.removeAt(i);
-                      setState(() => _selected = _selected.clamp(
-                          0, math.max(0, clips.length - 2)));
+                      setState(
+                        () => _selected = _selected.clamp(
+                          0,
+                          math.max(0, clips.length - 2),
+                        ),
+                      );
                     },
                     onDuplicate: (i) {
                       notifier.duplicateAt(i);
@@ -307,7 +316,8 @@ class _ClipTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: scheme.primaryContainer.withValues(alpha: 0.5),
                     borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(13)),
+                      top: Radius.circular(13),
+                    ),
                   ),
                   child: Icon(icon, color: scheme.primary),
                 ),
@@ -322,13 +332,18 @@ class _ClipTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontSize: 10.5, color: scheme.onSurface),
+                          fontSize: 10.5,
+                          color: scheme.onSurface,
+                        ),
                       ),
                     ),
                     InkWell(
                       onTap: onRemove,
-                      child: Icon(Icons.close_rounded,
-                          size: 15, color: scheme.onSurfaceVariant),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 15,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -363,12 +378,12 @@ class _ClipInspector extends StatelessWidget {
           _LabelRow('Обрезка', '${end.toStringAsFixed(1)} с'),
           RangeSlider(
             values: RangeValues(
-                clip.trimStart.clamp(0.0, d).toDouble(), end.toDouble()),
+              clip.trimStart.clamp(0.0, d).toDouble(),
+              end.toDouble(),
+            ),
             max: d,
-            onChanged: (r) => onChanged(clip.copyWith(
-              trimStart: r.start,
-              trimEnd: r.end,
-            )),
+            onChanged: (r) =>
+                onChanged(clip.copyWith(trimStart: r.start, trimEnd: r.end)),
           ),
         ],
         _LabelRow('Скорость', '${clip.speed.toStringAsFixed(2)}×'),
@@ -380,8 +395,10 @@ class _ClipInspector extends StatelessWidget {
           onChanged: (v) => onChanged(clip.copyWith(speed: v)),
         ),
         if (clip.hasAudio) ...[
-          _LabelRow('Громкость',
-              clip.muted ? 'выкл' : '${(clip.volume * 100).round()}%'),
+          _LabelRow(
+            'Громкость',
+            clip.muted ? 'выкл' : '${(clip.volume * 100).round()}%',
+          ),
           Row(
             children: [
               Expanded(
@@ -395,9 +412,11 @@ class _ClipInspector extends StatelessWidget {
               IconButton(
                 tooltip: clip.muted ? 'Включить звук' : 'Выключить звук',
                 onPressed: () => onChanged(clip.copyWith(muted: !clip.muted)),
-                icon: Icon(clip.muted
-                    ? Icons.volume_off_rounded
-                    : Icons.volume_up_rounded),
+                icon: Icon(
+                  clip.muted
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
+                ),
               ),
             ],
           ),
@@ -406,9 +425,10 @@ class _ClipInspector extends StatelessWidget {
         Text(
           'Фильтр',
           style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-              color: scheme.onSurfaceVariant),
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: scheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -446,14 +466,18 @@ class _LabelRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurface)),
-          Text(value,
-              style:
-                  TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurface,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
         ],
       ),
     );
@@ -471,8 +495,11 @@ class _EmptyHint extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.video_settings_rounded,
-              size: 44, color: scheme.onSurfaceVariant),
+          Icon(
+            Icons.video_settings_rounded,
+            size: 44,
+            color: scheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 10),
           Text(
             'Выбери видео, фото или музыку',
@@ -535,17 +562,23 @@ class _ExportBar extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text('${(exporter.progress * 100).round()}%',
-                    style: TextStyle(
-                        fontSize: 12, color: scheme.onSurfaceVariant)),
+                Text(
+                  '${(exporter.progress * 100).round()}%',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 10),
           ],
           if (exporter.phase == ExportPhase.failed &&
               exporter.message != null) ...[
-            Text(exporter.message!,
-                style: TextStyle(fontSize: 12, color: scheme.error)),
+            Text(
+              exporter.message!,
+              style: TextStyle(fontSize: 12, color: scheme.error),
+            ),
             const SizedBox(height: 8),
           ],
           Row(
@@ -584,8 +617,9 @@ class _ExportBar extends StatelessWidget {
                     DropdownMenuItem(value: 30, child: Text('30')),
                     DropdownMenuItem(value: 60, child: Text('60')),
                   ],
-                  onChanged:
-                      exporter.busy ? null : (v) => v == null ? null : onFps(v),
+                  onChanged: exporter.busy
+                      ? null
+                      : (v) => v == null ? null : onFps(v),
                 ),
               ),
             ],
@@ -604,9 +638,11 @@ class _ExportBar extends StatelessWidget {
                   onPressed: exporter.busy
                       ? null
                       : (project.isEmpty ? null : onExport),
-                  icon: Icon(exporter.busy
-                      ? Icons.hourglass_top_rounded
-                      : Icons.save_alt_rounded),
+                  icon: Icon(
+                    exporter.busy
+                        ? Icons.hourglass_top_rounded
+                        : Icons.save_alt_rounded,
+                  ),
                   label: Text(exporter.busy ? 'Экспорт…' : 'Экспорт MP4'),
                 ),
               ),
@@ -620,8 +656,7 @@ class _ExportBar extends StatelessWidget {
               ],
             ],
           ),
-          if (exporter.phase == ExportPhase.done &&
-              exporter.outputPath != null)
+          if (exporter.phase == ExportPhase.done && exporter.outputPath != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: InkWell(

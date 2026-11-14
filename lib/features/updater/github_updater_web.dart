@@ -17,12 +17,14 @@ class GithubUpdater {
   final Dio? dio;
   final String currentVersion;
 
-  static Dio _makeDefault() => Dio(BaseOptions(
-        baseUrl: 'https://api.github.com',
-        receiveDataWhenStatusError: true,
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 60),
-      ));
+  static Dio _makeDefault() => Dio(
+    BaseOptions(
+      baseUrl: 'https://api.github.com',
+      receiveDataWhenStatusError: true,
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 60),
+    ),
+  );
 
   Dio get _client => dio ?? _makeDefault();
 
@@ -31,14 +33,17 @@ class GithubUpdater {
     client.options.headers['User-Agent'] = 'MideAutoUpdater/1.0';
     client.options.headers['Accept'] = 'application/vnd.github+json';
     try {
-      final res =
-          await client.get('/repos/${GithubConfig.path}/releases/latest');
+      final res = await client.get(
+        '/repos/${GithubConfig.path}/releases/latest',
+      );
       final data = res.data;
       if (data is! Map) {
         return UpdateCheckResult.failure('Неожиданный ответ GitHub API');
       }
       final tag = (data['tag_name'] ?? '').toString().trim();
-      if (tag.isEmpty) return UpdateCheckResult.failure('GitHub: пустая версия');
+      if (tag.isEmpty) {
+        return UpdateCheckResult.failure('GitHub: пустая версия');
+      }
 
       final htmlUrl = (data['html_url'] ?? '').toString();
       final body = (data['body'] ?? '').toString();
@@ -47,7 +52,8 @@ class GithubUpdater {
       final comparison = compareVersions(version, currentVersion);
       if (comparison == null) {
         return UpdateCheckResult.failure(
-            'Не удалось сравнить версии $currentVersion и $version');
+          'Не удалось сравнить версии $currentVersion и $version',
+        );
       }
       if (comparison <= 0) {
         return UpdateCheckResult.upToDate(
@@ -82,7 +88,8 @@ class GithubUpdater {
       if (e.response?.statusCode == 404) return UpdateCheckResult.noReleases();
       final msg = e.message ?? '';
       return UpdateCheckResult.failure(
-          msg.isNotEmpty ? msg : 'Нет соединения с GitHub');
+        msg.isNotEmpty ? msg : 'Нет соединения с GitHub',
+      );
     }
   }
 

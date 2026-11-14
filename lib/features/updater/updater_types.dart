@@ -4,7 +4,11 @@ import 'package:flutter/foundation.dart';
 
 /// A single downloadable asset attached to a GitHub release.
 class UpdateAsset {
-  const UpdateAsset({required this.name, required this.url, this.sizeBytes = 0});
+  const UpdateAsset({
+    required this.name,
+    required this.url,
+    this.sizeBytes = 0,
+  });
 
   final String name;
   final String url;
@@ -35,14 +39,13 @@ class UpdateCheckResult {
     String? releaseUrl,
     String? notes,
     String? publishedAt,
-  }) =>
-      UpdateCheckResult._(
-        kind: UpdateKind.upToDate,
-        latestVersion: latestVersion,
-        releaseUrl: releaseUrl,
-        notes: notes,
-        publishedAt: publishedAt,
-      );
+  }) => UpdateCheckResult._(
+    kind: UpdateKind.upToDate,
+    latestVersion: latestVersion,
+    releaseUrl: releaseUrl,
+    notes: notes,
+    publishedAt: publishedAt,
+  );
 
   factory UpdateCheckResult.updateAvailable({
     required String latestVersion,
@@ -50,15 +53,14 @@ class UpdateCheckResult {
     String? releaseUrl,
     String? notes,
     String? publishedAt,
-  }) =>
-      UpdateCheckResult._(
-        kind: UpdateKind.update,
-        latestVersion: latestVersion,
-        asset: asset,
-        releaseUrl: releaseUrl,
-        notes: notes,
-        publishedAt: publishedAt,
-      );
+  }) => UpdateCheckResult._(
+    kind: UpdateKind.update,
+    latestVersion: latestVersion,
+    asset: asset,
+    releaseUrl: releaseUrl,
+    notes: notes,
+    publishedAt: publishedAt,
+  );
 
   factory UpdateCheckResult.noReleases() =>
       const UpdateCheckResult._(kind: UpdateKind.none);
@@ -69,30 +71,30 @@ class UpdateCheckResult {
     String? releaseUrl,
     String? notes,
     String? publishedAt,
-  }) =>
-      UpdateCheckResult._(
-        kind: UpdateKind.noMatch,
-        latestVersion: latestVersion,
-        releaseUrl: releaseUrl,
-        notes: notes,
-        publishedAt: publishedAt,
-      );
+  }) => UpdateCheckResult._(
+    kind: UpdateKind.noMatch,
+    latestVersion: latestVersion,
+    releaseUrl: releaseUrl,
+    notes: notes,
+    publishedAt: publishedAt,
+  );
 
   factory UpdateCheckResult.failure(String error) =>
       UpdateCheckResult._(kind: UpdateKind.error, error: error);
 
   factory UpdateCheckResult.installerOpened(
-          UpdateCheckResult source, String path) =>
-      UpdateCheckResult._(
-        kind: UpdateKind.installerOpened,
-        latestVersion: source.latestVersion,
-        asset: source.asset,
-        releaseUrl: source.releaseUrl,
-        notes: source.notes,
-        publishedAt: source.publishedAt,
-        error: source.error,
-        savedPath: path,
-      );
+    UpdateCheckResult source,
+    String path,
+  ) => UpdateCheckResult._(
+    kind: UpdateKind.installerOpened,
+    latestVersion: source.latestVersion,
+    asset: source.asset,
+    releaseUrl: source.releaseUrl,
+    notes: source.notes,
+    publishedAt: source.publishedAt,
+    error: source.error,
+    savedPath: path,
+  );
 
   final UpdateKind kind;
   final String? latestVersion;
@@ -120,8 +122,9 @@ int? compareVersions(String left, String right) {
 
   final leftParts = leftMatch.group(1)!.split('.').map(int.parse).toList();
   final rightParts = rightMatch.group(1)!.split('.').map(int.parse).toList();
-  final length =
-      leftParts.length > rightParts.length ? leftParts.length : rightParts.length;
+  final length = leftParts.length > rightParts.length
+      ? leftParts.length
+      : rightParts.length;
   for (var i = 0; i < length; i++) {
     final leftPart = i < leftParts.length ? leftParts[i] : 0;
     final rightPart = i < rightParts.length ? rightParts[i] : 0;

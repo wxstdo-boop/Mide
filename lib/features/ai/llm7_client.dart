@@ -30,8 +30,8 @@ class Llm7Exception implements Exception {
 
 class Llm7Client {
   Llm7Client({Dio? dio})
-      : _dio =
-            dio ?? Dio(BaseOptions(connectTimeout: const Duration(seconds: 10)));
+    : _dio =
+          dio ?? Dio(BaseOptions(connectTimeout: const Duration(seconds: 10)));
 
   static const String baseUrl = 'https://api.llm7.io/v1';
 
@@ -58,9 +58,7 @@ class Llm7Client {
         options: Options(
           responseType: ResponseType.json,
           validateStatus: (s) => s == null || s < 500,
-          headers: <String, dynamic>{
-            'Content-Type': 'application/json',
-          },
+          headers: <String, dynamic>{'Content-Type': 'application/json'},
         ),
         cancelToken: cancelToken,
       );

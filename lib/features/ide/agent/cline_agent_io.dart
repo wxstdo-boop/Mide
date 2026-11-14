@@ -70,21 +70,29 @@ class ClineAgentBackend {
       );
     }
     _proc = proc;
-    proc.stdout.transform(const Utf8Decoder(allowMalformed: true)).listen(_onChildLine);
-    proc.stderr.transform(const Utf8Decoder(allowMalformed: true)).listen(_onChildLine);
+    proc.stdout
+        .transform(const Utf8Decoder(allowMalformed: true))
+        .listen(_onChildLine);
+    proc.stderr
+        .transform(const Utf8Decoder(allowMalformed: true))
+        .listen(_onChildLine);
 
     final info = await _waitHealth();
     _info = info;
-    unawaited(proc.exitCode.then((code) {
-      if (_port != 0) _port = 0;
-      _proc = null;
-      _info = null;
-      _events.add(ClineAgentEvent(
-        type: 'stopped',
-        text: 'Сайдкар завершился (код $code)',
-        status: code.toString(),
-      ));
-    }));
+    unawaited(
+      proc.exitCode.then((code) {
+        if (_port != 0) _port = 0;
+        _proc = null;
+        _info = null;
+        _events.add(
+          ClineAgentEvent(
+            type: 'stopped',
+            text: 'Сайдкар завершился (код $code)',
+            status: code.toString(),
+          ),
+        );
+      }),
+    );
     return info;
   }
 
@@ -103,33 +111,45 @@ class ClineAgentBackend {
       req.headers.contentType = ContentType.json;
       req.write(jsonEncode({'message': message}));
       final res = await req.close();
-      await for (final line in res.transform(const Utf8Decoder(allowMalformed: true)).transform(const LineSplitter())) {
+      await for (final line
+          in res
+              .transform(const Utf8Decoder(allowMalformed: true))
+              .transform(const LineSplitter())) {
         if (!line.startsWith('data: ')) continue;
         final ev = _decode(line.substring(6));
         if (ev == null) continue;
         final out = ev['output'];
-        _events.add(ClineAgentEvent(
-          type: '${ev['type']}',
-          // tool_end carries `output`, done carries `error` — both belong in
-          // the transcript text, so fold them into one field here.
-          text: ev['text'] is String
-              ? ev['text'] as String
-              : out != null
-                  ? (out is String ? out : '$out')
-                  : ev['error'] is String
-                      ? ev['error'] as String
-                      : null,
-          name: ev['name'] is String ? ev['name'] as String : null,
-          input: ev['input'],
-          approvalId: ev['id'] is String ? ev['id'] as String : null,
-          status: ev['status'] is String ? ev['status'] as String : null,
-        ));
+        _events.add(
+          ClineAgentEvent(
+            type: '${ev['type']}',
+            // tool_end carries `output`, done carries `error` — both belong in
+            // the transcript text, so fold them into one field here.
+            text: ev['text'] is String
+                ? ev['text'] as String
+                : out != null
+                ? (out is String ? out : '$out')
+                : ev['error'] is String
+                ? ev['error'] as String
+                : null,
+            name: ev['name'] is String ? ev['name'] as String : null,
+            input: ev['input'],
+            approvalId: ev['id'] is String ? ev['id'] as String : null,
+            status: ev['status'] is String ? ev['status'] as String : null,
+          ),
+        );
       }
     } on SocketException catch (e) {
-      _events.add(ClineAgentEvent(type: 'error', text: 'Сайдкар недоступен: ${e.osError?.message ?? e.message}'));
+      _events.add(
+        ClineAgentEvent(
+          type: 'error',
+          text: 'Сайдкар недоступен: ${e.osError?.message ?? e.message}',
+        ),
+      );
       rethrow;
     } catch (e) {
-      _events.add(ClineAgentEvent(type: 'error', text: 'Связь с агентом потеряна: $e'));
+      _events.add(
+        ClineAgentEvent(type: 'error', text: 'Связь с агентом потеряна: $e'),
+      );
       rethrow;
     } finally {
       http.close(force: true);
@@ -193,9 +213,7 @@ class ClineAgentBackend {
             model: '${j['model']}',
             provider: '${j['provider']}',
             port: _port,
-            tools: [
-              for (final t in (j['tools'] as List? ?? const [])) '$t',
-            ],
+            tools: [for (final t in (j['tools'] as List? ?? const [])) '$t'],
             workspace: '${j['workspace']}',
           );
         }
@@ -207,9 +225,11 @@ class ClineAgentBackend {
     final tail = _log.trim();
     _proc?.kill();
     _proc = null;
-    throw ClineAgentException(tail.isEmpty
-        ? 'Агент не поднялся за 25 с — проверь, что node.exe целая установка.'
-        : 'Агент не поднялся: ${tail.split('\n').take(6).join(' / ')}');
+    throw ClineAgentException(
+      tail.isEmpty
+          ? 'Агент не поднялся за 25 с — проверь, что node.exe целая установка.'
+          : 'Агент не поднялся: ${tail.split('\n').take(6).join(' / ')}',
+    );
   }
 
   /// A port nobody holds: two IDE windows must not fight over 8765.
@@ -237,14 +257,19 @@ class ClineAgentBackend {
   }
 
   static Iterable<String> _searchRoots() => [
-        if (Platform.environment['MIDE_AGENT_DIR']?.trim().isNotEmpty ?? false)
-          Platform.environment['MIDE_AGENT_DIR']!.trim(),
-        Directory.current.path,
-        File(Platform.resolvedExecutable).parent.path,
-      ];
+    if (Platform.environment['MIDE_AGENT_DIR']?.trim().isNotEmpty ?? false)
+      Platform.environment['MIDE_AGENT_DIR']!.trim(),
+    Directory.current.path,
+    File(Platform.resolvedExecutable).parent.path,
+  ];
 
   static String _join(String a, String b, [String c = '', String d = '']) =>
-      <String>[a, b, c, d].where((p) => p.isNotEmpty).join(Platform.pathSeparator);
+      <String>[
+        a,
+        b,
+        c,
+        d,
+      ].where((p) => p.isNotEmpty).join(Platform.pathSeparator);
 
   static Map<String, Object?>? _decode(String body) {
     try {

@@ -47,9 +47,7 @@ Future<void> main() async {
         themeChoiceProvider.overrideWith(
           () => ThemeChoiceNotifier(seed: seededTheme),
         ),
-        appTabProvider.overrideWith(
-          () => AppTabNotifier(seed: seededTab),
-        ),
+        appTabProvider.overrideWith(() => AppTabNotifier(seed: seededTab)),
       ],
       child: const MideApp(),
     ),
@@ -61,9 +59,7 @@ Future<void> main() async {
 class _BouncyScrollBehavior extends MaterialScrollBehavior {
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) =>
-      const BouncingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      );
+      const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
 }
 
 class MideApp extends ConsumerWidget {
@@ -154,7 +150,9 @@ class _SplashShellState extends State<_SplashShell>
       end: Alignment.bottomCenter,
       colors: [
         Color.alphaBlend(
-            scheme.primary.withValues(alpha: 0.18), scheme.surface),
+          scheme.primary.withValues(alpha: 0.18),
+          scheme.surface,
+        ),
         scheme.surface,
       ],
       stops: const [0.0, 0.5],
@@ -387,8 +385,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 opacity: curved,
                 child: SlideTransition(
                   position: Tween<Offset>(
-                          begin: const Offset(0.0, 0.03), end: Offset.zero)
-                      .animate(curved),
+                    begin: const Offset(0.0, 0.03),
+                    end: Offset.zero,
+                  ).animate(curved),
                   child: ScaleTransition(
                     scale: Tween<double>(begin: 0.985, end: 1).animate(curved),
                     child: child,

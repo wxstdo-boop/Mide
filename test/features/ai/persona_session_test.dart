@@ -37,9 +37,7 @@ void main() {
     test('clear resets state and reports idle', () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      await container
-          .read(personaSessionProvider(mira).notifier)
-          .clear();
+      await container.read(personaSessionProvider(mira).notifier).clear();
       final s = container.read(personaSessionProvider(mira));
       expect(s.messages, isEmpty);
       expect(s.error, isNull);

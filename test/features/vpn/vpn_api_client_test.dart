@@ -19,17 +19,20 @@ class _ScriptedAdapter implements HttpClientAdapter {
     RequestOptions options,
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
-  ) =>
-      handler(options);
+  ) => handler(options);
 
   @override
   void close({bool force = false}) {}
 }
 
 ResponseBody _jsonBody(String body, {int status = 200}) =>
-    ResponseBody.fromString(body, status, headers: {
-      Headers.contentTypeHeader: [Headers.jsonContentType],
-    });
+    ResponseBody.fromString(
+      body,
+      status,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
 
 void main() {
   VpnApiClient clientWith(
@@ -47,15 +50,18 @@ void main() {
 
   group('VpnApiClient.fetchServers', () {
     test('parses a bare list response', () async {
-      final client = clientWith((o) async =>
-          _jsonBody('[{"id":"a","name":"Alpha"},{"id":"b","name":"Beta"}]'));
+      final client = clientWith(
+        (o) async =>
+            _jsonBody('[{"id":"a","name":"Alpha"},{"id":"b","name":"Beta"}]'),
+      );
       final servers = await client.fetchServers();
       expect(servers.map((s) => s.id), ['a', 'b']);
     });
 
     test('parses a wrapped {data:[...]} response', () async {
       final client = clientWith(
-          (o) async => _jsonBody('{"data":[{"id":"z","name":"Zeta"}]}'));
+        (o) async => _jsonBody('{"data":[{"id":"z","name":"Zeta"}]}'),
+      );
       final servers = await client.fetchServers();
       expect(servers.single.name, 'Zeta');
     });
@@ -74,8 +80,9 @@ void main() {
       final client = clientWith((o) async => ResponseBody.fromString('', 401));
       expect(
         () => client.fetchServers(),
-        throwsA(isA<VpnApiException>()
-            .having((e) => e.statusCode, 'statusCode', 401)),
+        throwsA(
+          isA<VpnApiException>().having((e) => e.statusCode, 'statusCode', 401),
+        ),
       );
     });
 
@@ -98,7 +105,8 @@ void main() {
   group('VpnApiClient.connect', () {
     test('returns the parsed connect result', () async {
       final client = clientWith(
-          (o) async => _jsonBody('{"ip":"1.2.3.4","protocol":"WireGuard"}'));
+        (o) async => _jsonBody('{"ip":"1.2.3.4","protocol":"WireGuard"}'),
+      );
       final res = await client.connect('srv-1');
       expect(res.ipAddress, '1.2.3.4');
       expect(res.protocol, 'WireGuard');
@@ -108,8 +116,9 @@ void main() {
       final client = clientWith((o) async => ResponseBody.fromString('', 403));
       expect(
         () => client.connect('srv-1'),
-        throwsA(isA<VpnApiException>()
-            .having((e) => e.statusCode, 'statusCode', 403)),
+        throwsA(
+          isA<VpnApiException>().having((e) => e.statusCode, 'statusCode', 403),
+        ),
       );
     });
   });
@@ -124,8 +133,9 @@ void main() {
       final client = clientWith((o) async => ResponseBody.fromString('', 401));
       expect(
         () => client.disconnect(),
-        throwsA(isA<VpnApiException>()
-            .having((e) => e.statusCode, 'statusCode', 401)),
+        throwsA(
+          isA<VpnApiException>().having((e) => e.statusCode, 'statusCode', 401),
+        ),
       );
     });
   });

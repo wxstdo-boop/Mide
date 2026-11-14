@@ -23,8 +23,11 @@ class ClipPreview extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.movie_filter_rounded,
-              size: 34, color: scheme.onSurfaceVariant),
+          Icon(
+            Icons.movie_filter_rounded,
+            size: 34,
+            color: scheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 8),
           Text(
             clip == null ? 'Добавь клип' : 'Превью доступно в приложении',

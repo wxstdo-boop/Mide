@@ -73,9 +73,7 @@ class ClipExporter {
     await work.create(recursive: true);
 
     final outDir = await getApplicationDocumentsDirectory();
-    final outDirClip = Directory(
-      '${outDir.path}${Platform.pathSeparator}Mide',
-    );
+    final outDirClip = Directory('${outDir.path}${Platform.pathSeparator}Mide');
     if (!outDirClip.existsSync()) {
       await outDirClip.create(recursive: true);
     }
@@ -91,8 +89,7 @@ class ClipExporter {
       for (var i = 0; i < project.clips.length; i++) {
         if (_cancelled) throw const ExportCancelled();
         final clip = project.clips[i];
-        final clipOut =
-            '${work.path}${Platform.pathSeparator}part_$i.mp4';
+        final clipOut = '${work.path}${Platform.pathSeparator}part_$i.mp4';
         final clipDur = clip.outputDuration(3.0);
         final clipIndex = i + 1;
 
@@ -101,8 +98,7 @@ class ClipExporter {
           'Рендер $clipIndex/${project.clips.length}',
         );
 
-        final args =
-            buildClipArgs(clip, project.canvas, project.fps, clipOut);
+        final args = buildClipArgs(clip, project.canvas, project.fps, clipOut);
         final code = await _run(args, (ms) {
           if (total <= 0) return;
           final within = clipDur <= 0
@@ -121,11 +117,9 @@ class ClipExporter {
       if (_cancelled) throw const ExportCancelled();
 
       report(0.97, 'Склейка');
-      final listFile =
-          File('${work.path}${Platform.pathSeparator}list.txt');
+      final listFile = File('${work.path}${Platform.pathSeparator}list.txt');
       await listFile.writeAsString(buildConcatList(parts));
-      final code =
-          await _run(buildConcatArgs(listFile.path, outputPath), null);
+      final code = await _run(buildConcatArgs(listFile.path, outputPath), null);
       if (code != null) {
         throw StateError('FFmpeg вернул ошибку на склейке');
       }

@@ -110,8 +110,18 @@ class ClipEdit {
       other.filter == filter;
 
   @override
-  int get hashCode => Object.hash(path, name, kind, duration, trimStart,
-      trimEnd, speed, volume, muted, filter);
+  int get hashCode => Object.hash(
+    path,
+    name,
+    kind,
+    duration,
+    trimStart,
+    trimEnd,
+    speed,
+    volume,
+    muted,
+    filter,
+  );
 }
 
 /// Output canvas presets.

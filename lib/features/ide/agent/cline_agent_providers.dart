@@ -36,13 +36,12 @@ class ClineAgentState {
     ClineAgentInfo? info,
     String? error,
     bool clearError = false,
-  }) =>
-      ClineAgentState(
-        phase: phase ?? this.phase,
-        steps: steps ?? this.steps,
-        info: info ?? this.info,
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => ClineAgentState(
+    phase: phase ?? this.phase,
+    steps: steps ?? this.steps,
+    info: info ?? this.info,
+    error: clearError ? null : (error ?? this.error),
+  );
 }
 
 class ClineAgentNotifier extends Notifier<ClineAgentState> {
@@ -63,27 +62,22 @@ class ClineAgentNotifier extends Notifier<ClineAgentState> {
     if (state.live) return;
     state = state.copyWith(phase: ClineAgentPhase.starting, clearError: true);
     try {
-      final info = await ClineAgentBackend.instance
-          .start(workspace: workspace, nodePath: nodePath);
+      final info = await ClineAgentBackend.instance.start(
+        workspace: workspace,
+        nodePath: nodePath,
+      );
       state = state.copyWith(
         phase: ClineAgentPhase.ready,
         info: info,
         clearError: true,
       );
-      _push(const ClineStep(
-        kind: ClineStepKind.notice,
-        text: 'Агент на связи',
-      ));
+      _push(
+        const ClineStep(kind: ClineStepKind.notice, text: 'Агент на связи'),
+      );
     } on ClineAgentException catch (e) {
-      state = state.copyWith(
-        phase: ClineAgentPhase.failed,
-        error: e.message,
-      );
+      state = state.copyWith(phase: ClineAgentPhase.failed, error: e.message);
     } catch (e) {
-      state = state.copyWith(
-        phase: ClineAgentPhase.failed,
-        error: '$e',
-      );
+      state = state.copyWith(phase: ClineAgentPhase.failed, error: '$e');
     }
   }
 
@@ -92,7 +86,8 @@ class ClineAgentNotifier extends Notifier<ClineAgentState> {
     if (trimmed.isEmpty || state.busy) return;
     if (!state.live) {
       state = state.copyWith(
-        error: 'Сначала нажми «Запустить» — агент поднимает свой процесс на ПК.',
+        error:
+            'Сначала нажми «Запустить» — агент поднимает свой процесс на ПК.',
       );
       return;
     }
@@ -136,32 +131,39 @@ class ClineAgentNotifier extends Notifier<ClineAgentState> {
       case 'reasoning':
         _appendText(ClineStepKind.reasoning, ev.text);
       case 'tool_start':
-        _push(ClineStep(
-          kind: ClineStepKind.tool,
-          text: ev.name ?? '?',
-          tool: ev.name,
-          args: ev.input,
-          pending: true,
-        ));
+        _push(
+          ClineStep(
+            kind: ClineStepKind.tool,
+            text: ev.name ?? '?',
+            tool: ev.name,
+            args: ev.input,
+            pending: true,
+          ),
+        );
       case 'tool_end':
         _finishTool(ev.name, ev.text ?? _stringify(ev.input));
       case 'approval':
-        _push(ClineStep(
-          kind: ClineStepKind.approval,
-          text: ev.name ?? '?',
-          tool: ev.name,
-          args: ev.input,
-          approvalId: ev.approvalId,
-          pending: true,
-        ));
+        _push(
+          ClineStep(
+            kind: ClineStepKind.approval,
+            text: ev.name ?? '?',
+            tool: ev.name,
+            args: ev.input,
+            approvalId: ev.approvalId,
+            pending: true,
+          ),
+        );
       case 'done':
         final failed = ev.status != null && ev.status != 'completed';
         if (failed) {
-          _push(ClineStep(
-            kind: ClineStepKind.notice,
-            text: 'Прогон завершён со статусом ${ev.status}'
-                '${ev.text == null ? '' : ': ${ev.text}'}',
-          ));
+          _push(
+            ClineStep(
+              kind: ClineStepKind.notice,
+              text:
+                  'Прогон завершён со статусом ${ev.status}'
+                  '${ev.text == null ? '' : ': ${ev.text}'}',
+            ),
+          );
         }
         if (ev.status != null) {
           state = state.copyWith(
@@ -172,10 +174,7 @@ class ClineAgentNotifier extends Notifier<ClineAgentState> {
         }
       case 'error':
         _push(ClineStep(kind: ClineStepKind.notice, text: ev.text ?? 'ошибка'));
-        state = state.copyWith(
-          phase: ClineAgentPhase.ready,
-          error: ev.text,
-        );
+        state = state.copyWith(phase: ClineAgentPhase.ready, error: ev.text);
       case 'stopped':
         state = state.copyWith(
           phase: ClineAgentPhase.stopped,
@@ -201,7 +200,9 @@ class ClineAgentNotifier extends Notifier<ClineAgentState> {
   void _finishTool(String? name, String? result) {
     for (var i = _steps.length - 1; i >= 0; i--) {
       final s = _steps[i];
-      if (s.kind == ClineStepKind.tool && s.pending && (name == null || s.tool == name)) {
+      if (s.kind == ClineStepKind.tool &&
+          s.pending &&
+          (name == null || s.tool == name)) {
         _steps[i] = s.copyWith(result: result, pending: false);
         break;
       }
@@ -229,4 +230,5 @@ class ClineAgentNotifier extends Notifier<ClineAgentState> {
 
 final clineAgentProvider =
     NotifierProvider<ClineAgentNotifier, ClineAgentState>(
-        ClineAgentNotifier.new);
+      ClineAgentNotifier.new,
+    );

@@ -20,16 +20,31 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
   final _scroll = ScrollController();
 
   static const _actions = <(String, IconData, String)>[
-    ('Объясни', Icons.help_outline_rounded,
-        'Кратко объясни, что делает этот код, построчно.'),
-    ('Баги', Icons.bug_report_outlined,
-        'Найди ошибки в этом файле и дай исправления по пунктам.'),
-    ('Тесты', Icons.science_outlined,
-        'Напиши тесты для этого файла — полный файл одним код-блоком.'),
-    ('Рефактор', Icons.auto_fix_high_rounded,
-        'Отрефактори файл: упрости, убери дубли, сохрани поведение.'),
-    ('Докстринг', Icons.article_outlined,
-        'Добавь докстринги к публичным элементам. Полный файл.'),
+    (
+      'Объясни',
+      Icons.help_outline_rounded,
+      'Кратко объясни, что делает этот код, построчно.',
+    ),
+    (
+      'Баги',
+      Icons.bug_report_outlined,
+      'Найди ошибки в этом файле и дай исправления по пунктам.',
+    ),
+    (
+      'Тесты',
+      Icons.science_outlined,
+      'Напиши тесты для этого файла — полный файл одним код-блоком.',
+    ),
+    (
+      'Рефактор',
+      Icons.auto_fix_high_rounded,
+      'Отрефактори файл: упрости, убери дубли, сохрани поведение.',
+    ),
+    (
+      'Докстринг',
+      Icons.article_outlined,
+      'Добавь докстринги к публичным элементам. Полный файл.',
+    ),
   ];
 
   @override
@@ -77,7 +92,11 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
             padding: const EdgeInsets.fromLTRB(14, 12, 8, 8),
             child: Row(
               children: [
-                Icon(Icons.auto_awesome_rounded, size: 16, color: scheme.primary),
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 16,
+                  color: scheme.primary,
+                ),
                 const SizedBox(width: 7),
                 Text(
                   'Кодинг-ИИ',
@@ -92,8 +111,11 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                 IconButton(
                   tooltip: 'Kilo API-ключ (бесплатный)',
                   onPressed: _showKiloKeyDialog,
-                  icon: Icon(Icons.vpn_key_rounded,
-                      size: 16, color: scheme.onSurfaceVariant),
+                  icon: Icon(
+                    Icons.vpn_key_rounded,
+                    size: 16,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   visualDensity: VisualDensity.compact,
                 ),
               ],
@@ -110,15 +132,21 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                     padding: const EdgeInsets.only(right: 6),
                     child: ActionChip(
                       avatar: Icon(icon, size: 14, color: scheme.primary),
-                      label: Text(label,
-                          style: const TextStyle(
-                              fontSize: 11.5, fontWeight: FontWeight.w700)),
+                      label: Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       onPressed: ai.busy ? null : () => _send(prompt),
                       visualDensity: VisualDensity.compact,
                       side: BorderSide(
-                          color: scheme.primary.withValues(alpha: 0.35)),
-                      backgroundColor:
-                          scheme.primaryContainer.withValues(alpha: 0.55),
+                        color: scheme.primary.withValues(alpha: 0.35),
+                      ),
+                      backgroundColor: scheme.primaryContainer.withValues(
+                        alpha: 0.55,
+                      ),
                     ),
                   ),
               ],
@@ -135,9 +163,10 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                         'Файл уходит в Kilo / LLM7 / OVH автоматически.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 12,
-                            height: 1.5,
-                            color: scheme.onSurfaceVariant),
+                          fontSize: 12,
+                          height: 1.5,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   )
@@ -154,7 +183,10 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                         ),
                       if (ai.busy) _TypingRow(label: ai.providerLabel),
                       if (ai.error != null)
-                        _ErrorCard(text: ai.error!, onKiloKey: _showKiloKeyDialog),
+                        _ErrorCard(
+                          text: ai.error!,
+                          onKiloKey: _showKiloKeyDialog,
+                        ),
                     ],
                   ),
           ),
@@ -174,8 +206,10 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                     decoration: const InputDecoration(
                       hintText: 'Спроси про открытый файл…',
                       isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -190,7 +224,8 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                     style: FilledButton.styleFrom(
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       backgroundColor: ai.busy
                           ? scheme.errorContainer
                           : scheme.primary,
@@ -198,14 +233,15 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                     child: Icon(
                       ai.busy ? Icons.stop_rounded : Icons.arrow_upward_rounded,
                       size: 20,
-                      color: ai.busy ? scheme.onErrorContainer : scheme.onPrimary,
+                      color: ai.busy
+                          ? scheme.onErrorContainer
+                          : scheme.onPrimary,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-
         ],
       ),
     );
@@ -219,11 +255,11 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         final scheme = Theme.of(ctx).colorScheme;
-        final ctrl = TextEditingController(
-          text: ref0.read(kiloKeyProvider),
-        );
+        final ctrl = TextEditingController(text: ref0.read(kiloKeyProvider));
         return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 14),
             padding: const EdgeInsets.all(18),
@@ -236,17 +272,20 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Kilo API-ключ',
-                    style: Theme.of(ctx)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  'Kilo API-ключ',
+                  style: Theme.of(ctx).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   'Бесплатно на app.kilo.ai (без карты). Без ключа ротация '
                   'просто пропускает Kilo и отвечает LLM7 / OVH.',
                   style: TextStyle(
-                      fontSize: 12.5, height: 1.45, color: scheme.onSurfaceVariant),
+                    fontSize: 12.5,
+                    height: 1.45,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 TextField(
@@ -278,8 +317,10 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                           ref0.read(kiloKeyProvider.notifier).clear();
                           Navigator.pop(ctx);
                         },
-                        child:
-                            Text('Удалить', style: TextStyle(color: scheme.error)),
+                        child: Text(
+                          'Удалить',
+                          style: TextStyle(color: scheme.error),
+                        ),
                       ),
                     ),
                   ],
@@ -320,9 +361,7 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
           ),
           FilledButton(
             onPressed: () {
-              ref
-                  .read(ideTabsProvider.notifier)
-                  .setContent(tab.path, code);
+              ref.read(ideTabsProvider.notifier).setContent(tab.path, code);
               Navigator.pop(ctx);
               _snack('Код вставлен — Ctrl+S для записи');
             },
@@ -461,9 +500,10 @@ class _ErrorCard extends StatelessWidget {
                 child: Text(
                   text,
                   style: TextStyle(
-                      fontSize: 12.5,
-                      height: 1.4,
-                      color: scheme.onErrorContainer),
+                    fontSize: 12.5,
+                    height: 1.4,
+                    color: scheme.onErrorContainer,
+                  ),
                 ),
               ),
             ],
@@ -552,7 +592,8 @@ class _AiBubble extends StatelessWidget {
                     color: scheme.surface,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: scheme.outlineVariant.withValues(alpha: 0.8)),
+                      color: scheme.outlineVariant.withValues(alpha: 0.8),
+                    ),
                   ),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -577,7 +618,10 @@ class _AiBubble extends StatelessWidget {
                   child: Text(
                     chunk.trim(),
                     style: TextStyle(
-                        fontSize: 13, height: 1.5, color: scheme.onSurface),
+                      fontSize: 13,
+                      height: 1.5,
+                      color: scheme.onSurface,
+                    ),
                   ),
                 ),
             if (!isUser)
@@ -588,8 +632,11 @@ class _AiBubble extends StatelessWidget {
                     tooltip: 'Копировать',
                     onPressed: () =>
                         Clipboard.setData(ClipboardData(text: message.text)),
-                    icon: Icon(Icons.copy_rounded,
-                        size: 15, color: scheme.onSurfaceVariant),
+                    icon: Icon(
+                      Icons.copy_rounded,
+                      size: 15,
+                      color: scheme.onSurfaceVariant,
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
                   if (onApply != null && hasCode)
@@ -610,6 +657,3 @@ class _AiBubble extends StatelessWidget {
     );
   }
 }
-
-
-

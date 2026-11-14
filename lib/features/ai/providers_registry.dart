@@ -16,9 +16,7 @@ const LlmProvider horde = LlmProvider(
   // Only one model per Horde slot — queue-based providers are slow and
   // multiple models just multiply the wait. If the 3B model times out,
   // rotation falls straight to the fast anonymous provider.
-  models: [
-    'koboldcpp/Llama-3.2-3B',
-  ],
+  models: ['koboldcpp/Llama-3.2-3B'],
 );
 
 /// Pollinations — free, anonymous, OpenAI-compatible text endpoint.
@@ -27,12 +25,8 @@ const LlmProvider pollinations = LlmProvider(
   label: 'Pollinations',
   baseUrl: 'https://text.pollinations.ai',
   chatPath: 'openai',
-  userAgent:
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-  models: [
-    'openai-fast',
-    'openai',
-  ],
+  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+  models: ['openai-fast', 'openai'],
 );
 
 /// LLM7.io — free OpenAI-compatible gateway (keyless for some models).

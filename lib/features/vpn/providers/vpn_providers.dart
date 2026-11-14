@@ -34,14 +34,14 @@ class VpnServer {
   });
 
   factory VpnServer.fromApi(ApiVpnServer s) => VpnServer(
-        id: s.id,
-        name: s.name,
-        country: s.country,
-        countryCode: s.countryCode,
-        flag: s.flag ?? '\u{1F310}',
-        pingMs: s.pingMs ?? 0,
-        loadPercent: s.loadPercent ?? 0,
-      );
+    id: s.id,
+    name: s.name,
+    country: s.country,
+    countryCode: s.countryCode,
+    flag: s.flag ?? '\u{1F310}',
+    pingMs: s.pingMs ?? 0,
+    loadPercent: s.loadPercent ?? 0,
+  );
 
   String get label => name;
   String get flagEmoji => flag;
@@ -58,24 +58,27 @@ class VpnServer {
 List<VpnServer> _builtInServers() {
   const xray = [
     VpnServer(
-        id: 'v2nodes',
-        name: 'V2Nodes · WebSocket',
-        country: 'VLESS WS+TLS · Windows',
-        countryCode: 'V2'),
+      id: 'v2nodes',
+      name: 'V2Nodes · WebSocket',
+      country: 'VLESS WS+TLS · Windows',
+      countryCode: 'V2',
+    ),
     VpnServer(
-        id: 'reality',
-        name: 'V2Nodes · Reality',
-        country: 'VLESS Reality · стойче к DPI',
-        countryCode: 'VR'),
+      id: 'reality',
+      name: 'V2Nodes · Reality',
+      country: 'VLESS Reality · стойче к DPI',
+      countryCode: 'VR',
+    ),
   ];
   if (XrayManager.isSupported) return xray;
   return [
     ...xray,
     const VpnServer(
-        id: 'warp',
-        name: 'Cloudflare WARP',
-        country: 'WireGuard · без Xray-ядра',
-        countryCode: 'CF'),
+      id: 'warp',
+      name: 'Cloudflare WARP',
+      country: 'WireGuard · без Xray-ядра',
+      countryCode: 'CF',
+    ),
   ];
 }
 
@@ -117,20 +120,20 @@ class VpnConnectionState {
     String? protocol,
     String? error,
     bool clearError = false,
-  }) =>
-      VpnConnectionState(
-        phase: phase ?? this.phase,
-        serverId: serverId ?? this.serverId,
-        connectedAt: connectedAt ?? this.connectedAt,
-        ipAddress: ipAddress ?? this.ipAddress,
-        protocol: protocol ?? this.protocol,
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => VpnConnectionState(
+    phase: phase ?? this.phase,
+    serverId: serverId ?? this.serverId,
+    connectedAt: connectedAt ?? this.connectedAt,
+    ipAddress: ipAddress ?? this.ipAddress,
+    protocol: protocol ?? this.protocol,
+    error: clearError ? null : (error ?? this.error),
+  );
 }
 
 /// Persisted WireGuard .conf content (import flow).
-final wgConfigProvider =
-    NotifierProvider<WgConfigNotifier, String>(WgConfigNotifier.new);
+final wgConfigProvider = NotifierProvider<WgConfigNotifier, String>(
+  WgConfigNotifier.new,
+);
 
 class WgConfigNotifier extends Notifier<String> {
   static const _storage = FlutterSecureStorage(
@@ -175,15 +178,17 @@ final vpnSettingsProvider = FutureProvider<VpnSettings>((ref) async {
 });
 
 // Server presets.
-final vpnServersProvider =
-    Provider<List<VpnServer>>((ref) => _builtInServers());
+final vpnServersProvider = Provider<List<VpnServer>>(
+  (ref) => _builtInServers(),
+);
 
 final selectedServerIdProvider = StateProvider<String?>((ref) => 'v2nodes');
 
 // Connection (drives the real tunnel).
 final vpnConnectionStateProvider =
     StateNotifierProvider<VpnConnectionNotifier, VpnConnectionState>(
-        (ref) => VpnConnectionNotifier(ref));
+      (ref) => VpnConnectionNotifier(ref),
+    );
 
 class VpnConnectionNotifier extends StateNotifier<VpnConnectionState> {
   final Ref _ref;
@@ -219,9 +224,11 @@ class VpnConnectionNotifier extends StateNotifier<VpnConnectionState> {
       final reality = xrayFlavors[serverId]!;
       if (!XrayManager.isSupported) {
         state = state.copyWith(
-            phase: VpnPhase.failed,
-            error: '${V2NodesSource.notice} '
-                'На Windows V2Nodes работает через встроенный Xray.');
+          phase: VpnPhase.failed,
+          error:
+              '${V2NodesSource.notice} '
+              'На Windows V2Nodes работает через встроенный Xray.',
+        );
         return;
       }
       try {
@@ -249,7 +256,8 @@ class VpnConnectionNotifier extends StateNotifier<VpnConnectionState> {
       return;
     }
     final endpoint =
-        WireguardEngine.parseEndpoint(conf) ?? 'engage.cloudflareclient.com:2408';
+        WireguardEngine.parseEndpoint(conf) ??
+        'engage.cloudflareclient.com:2408';
     await _sub?.cancel();
     _sub = WireguardEngine.instance.stageStream.listen((stage) {
       switch (stage) {
@@ -269,7 +277,9 @@ class VpnConnectionNotifier extends StateNotifier<VpnConnectionState> {
         case wg.VpnStage.exiting:
           if (!state.isConnected) {
             state = state.copyWith(
-                phase: VpnPhase.disconnected, clearError: true);
+              phase: VpnPhase.disconnected,
+              clearError: true,
+            );
           }
         default:
           break;
@@ -281,19 +291,13 @@ class VpnConnectionNotifier extends StateNotifier<VpnConnectionState> {
         wgQuickConfig: conf,
       );
     } catch (e) {
-      state = state.copyWith(
-        phase: VpnPhase.failed,
-        error: e.toString(),
-      );
+      state = state.copyWith(phase: VpnPhase.failed, error: e.toString());
     }
   }
 
   Future<void> disconnect() async {
     if (state.phase == VpnPhase.disconnected && !_xrayActive) return;
-    state = state.copyWith(
-      phase: VpnPhase.disconnecting,
-      clearError: true,
-    );
+    state = state.copyWith(phase: VpnPhase.disconnecting, clearError: true);
     if (_xrayActive) {
       _xrayActive = false;
       try {

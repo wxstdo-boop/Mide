@@ -22,7 +22,9 @@ class IdeTabStrip extends ConsumerWidget {
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
         border: Border(
-          bottom: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          bottom: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
       ),
       child: ListView(
@@ -66,7 +68,9 @@ class _TabChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: active ? scheme.surfaceContainerHighest : null,
           border: Border(
-            right: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+            right: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.5),
+            ),
             bottom: BorderSide(
               color: active ? scheme.primary : Colors.transparent,
               width: 2.5,
@@ -77,7 +81,9 @@ class _TabChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              tab.name.endsWith('.dart') ? Icons.terminal_rounded : Icons.insert_drive_file_outlined,
+              tab.name.endsWith('.dart')
+                  ? Icons.terminal_rounded
+                  : Icons.insert_drive_file_outlined,
               size: 14,
               color: active ? scheme.primary : scheme.onSurfaceVariant,
             ),
@@ -101,7 +107,11 @@ class _TabChip extends StatelessWidget {
               child: tab.dirty
                   ? Tooltip(
                       message: 'Не сохранено (Ctrl+S)',
-                      child: Icon(Icons.circle, size: 8, color: scheme.tertiary),
+                      child: Icon(
+                        Icons.circle,
+                        size: 8,
+                        color: scheme.tertiary,
+                      ),
                     )
                   : IconButton(
                       tooltip: 'Закрыть',
@@ -331,7 +341,10 @@ class _IdeEditorPaneState extends ConsumerState<IdeEditorPane> {
                       isDense: true,
                       filled: false,
                       contentPadding: EdgeInsets.only(
-                          top: 10, bottom: 40, right: 24),
+                        top: 10,
+                        bottom: 40,
+                        right: 24,
+                      ),
                       border: InputBorder.none,
                       focusedBorder: InputBorder.none,
                     ),
@@ -344,13 +357,16 @@ class _IdeEditorPaneState extends ConsumerState<IdeEditorPane> {
               right: 18,
               bottom: 10,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: scheme.surfaceContainerHighest.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                      color: scheme.outlineVariant.withValues(alpha: 0.7)),
+                    color: scheme.outlineVariant.withValues(alpha: 0.7),
+                  ),
                 ),
                 child: Text(
                   '$_caretInfo  ·  $lineCount строк',
@@ -368,5 +384,3 @@ class _IdeEditorPaneState extends ConsumerState<IdeEditorPane> {
     );
   }
 }
-
-

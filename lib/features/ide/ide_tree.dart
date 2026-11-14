@@ -31,7 +31,11 @@ class IdeFileTree extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
-        border: Border(right: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
+        border: Border(
+          right: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,7 +45,11 @@ class IdeFileTree extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(12, 10, 8, 6),
             child: Row(
               children: [
-                Icon(Icons.folder_open_rounded, size: 16, color: scheme.primary),
+                Icon(
+                  Icons.folder_open_rounded,
+                  size: 16,
+                  color: scheme.primary,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -68,7 +76,9 @@ class IdeFileTree extends ConsumerWidget {
                 _TreeIconBtn(
                   tooltip: 'Обновить',
                   icon: Icons.refresh_rounded,
-                  onTap: root == null ? null : ref.read(ideWorkspaceProvider.notifier).refresh,
+                  onTap: root == null
+                      ? null
+                      : ref.read(ideWorkspaceProvider.notifier).refresh,
                 ),
               ],
             ),
@@ -98,7 +108,10 @@ class IdeFileTree extends ConsumerWidget {
               color: scheme.errorContainer,
               child: Text(
                 ws.error!,
-                style: TextStyle(fontSize: 11.5, color: scheme.onErrorContainer),
+                style: TextStyle(
+                  fontSize: 11.5,
+                  color: scheme.onErrorContainer,
+                ),
               ),
             ),
         ],
@@ -201,11 +214,13 @@ class _TreeTile extends StatelessWidget {
               Icon(
                 node.isDir
                     ? (expanded
-                        ? Icons.folder_open_rounded
-                        : Icons.folder_rounded)
+                          ? Icons.folder_open_rounded
+                          : Icons.folder_rounded)
                     : _fileIcon(node.name),
                 size: 16,
-                color: node.isDir ? scheme.primary : _fileColor(scheme, node.name),
+                color: node.isDir
+                    ? scheme.primary
+                    : _fileColor(scheme, node.name),
               ),
               const SizedBox(width: 7),
               Expanded(
@@ -222,8 +237,11 @@ class _TreeTile extends StatelessWidget {
               ),
               PopupMenuButton<String>(
                 padding: EdgeInsets.zero,
-                icon: Icon(Icons.more_horiz_rounded,
-                    size: 16, color: scheme.outline),
+                icon: Icon(
+                  Icons.more_horiz_rounded,
+                  size: 16,
+                  color: scheme.outline,
+                ),
                 iconSize: 16,
                 onSelected: (v) {
                   if (v == 'rename') onRename();
@@ -232,19 +250,31 @@ class _TreeTile extends StatelessWidget {
                 itemBuilder: (_) => [
                   PopupMenuItem(
                     value: 'rename',
-                    child: Row(children: [
-                      Icon(Icons.edit_rounded, size: 16, color: scheme.onSurface),
-                      const SizedBox(width: 8),
-                      const Text('Переименовать'),
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.edit_rounded,
+                          size: 16,
+                          color: scheme.onSurface,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('Переименовать'),
+                      ],
+                    ),
                   ),
                   PopupMenuItem(
                     value: 'delete',
-                    child: Row(children: [
-                      Icon(Icons.delete_rounded, size: 16, color: scheme.error),
-                      const SizedBox(width: 8),
-                      Text('Удалить', style: TextStyle(color: scheme.error)),
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_rounded,
+                          size: 16,
+                          color: scheme.error,
+                        ),
+                        const SizedBox(width: 8),
+                        Text('Удалить', style: TextStyle(color: scheme.error)),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -322,5 +352,3 @@ class _TreeIconBtn extends StatelessWidget {
     );
   }
 }
-
-

@@ -58,8 +58,9 @@ class ClipProjectNotifier extends Notifier<ClipProject> {
   void clear() => state = const ClipProject();
 }
 
-final clipProjectProvider =
-    NotifierProvider<ClipProjectNotifier, ClipProject>(ClipProjectNotifier.new);
+final clipProjectProvider = NotifierProvider<ClipProjectNotifier, ClipProject>(
+  ClipProjectNotifier.new,
+);
 
 /// Runs and tracks a single export job.
 class ClipExportNotifier extends Notifier<ExportState> {
@@ -81,8 +82,8 @@ class ClipExportNotifier extends Notifier<ExportState> {
             phase: progress >= 1.0
                 ? ExportPhase.done
                 : (progress >= 0.97
-                    ? ExportPhase.concat
-                    : ExportPhase.rendering),
+                      ? ExportPhase.concat
+                      : ExportPhase.rendering),
             progress: progress,
             message: message,
           );
@@ -117,5 +118,6 @@ class ClipExportNotifier extends Notifier<ExportState> {
   void reset() => state = const ExportState();
 }
 
-final clipExportProvider =
-    NotifierProvider<ClipExportNotifier, ExportState>(ClipExportNotifier.new);
+final clipExportProvider = NotifierProvider<ClipExportNotifier, ExportState>(
+  ClipExportNotifier.new,
+);

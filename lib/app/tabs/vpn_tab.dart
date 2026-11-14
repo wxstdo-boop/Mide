@@ -200,8 +200,9 @@ class _ServerTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color:
-            isSelected ? scheme.primaryContainer : scheme.surfaceContainerLow,
+        color: isSelected
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
@@ -240,8 +241,9 @@ class _ServerTile extends StatelessWidget {
                       _ => Icons.dns_rounded,
                     },
                     size: 22,
-                    color:
-                        isSelected ? scheme.primary : scheme.onSurfaceVariant,
+                    color: isSelected
+                        ? scheme.primary
+                        : scheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -277,8 +279,10 @@ class _ServerTile extends StatelessWidget {
                 if (isCurrent) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: mide.successContainer,
                       borderRadius: BorderRadius.circular(999),
@@ -302,8 +306,9 @@ class _ServerTile extends StatelessWidget {
                     backgroundColor: isCurrent
                         ? scheme.errorContainer
                         : scheme.primary.withValues(alpha: 0.12),
-                    foregroundColor:
-                        isCurrent ? scheme.onErrorContainer : scheme.primary,
+                    foregroundColor: isCurrent
+                        ? scheme.onErrorContainer
+                        : scheme.primary,
                     disabledBackgroundColor: scheme.surfaceContainerHighest,
                   ),
                   icon: isBusy
@@ -359,9 +364,10 @@ class _EmptyServers extends StatelessWidget {
             Text(
               'Серверы не найдены',
               style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface),
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -413,11 +419,11 @@ class ConnectionInfoCard extends ConsumerWidget {
     }
 
     Widget divider() => Container(
-          width: 1,
-          height: 36,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          color: scheme.outlineVariant.withValues(alpha: 0.6),
-        );
+      width: 1,
+      height: 36,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      color: scheme.outlineVariant.withValues(alpha: 0.6),
+    );
 
     return Card(
       child: Padding(
@@ -429,7 +435,8 @@ class ConnectionInfoCard extends ConsumerWidget {
             Expanded(child: cell('Протокол', vpnState.protocol)),
             divider(),
             Expanded(
-                child: cell('Задержка', latency != null ? '$latency мс' : '—')),
+              child: cell('Задержка', latency != null ? '$latency мс' : '—'),
+            ),
           ],
         ),
       ),
@@ -470,50 +477,49 @@ class _VpnToggleCard extends ConsumerWidget {
     // screening free nodes), which is worth calling out so the pause doesn't
     // look like a hang.
     final xrayPath = state.serverId == 'v2nodes' || state.serverId == 'reality';
-    final provisioning = isBusy &&
+    final provisioning =
+        isBusy &&
         state.phase == VpnPhase.connecting &&
         (xrayPath || conf.isEmpty);
 
     final (String title, String status) = isConnected
         ? ('VPN включён', 'Туннель работает · обход активен')
         : denied
-            ? (
-                'Разрешение отклонено',
-                state.error ?? 'Система не дала VPN-разрешение'
-              )
-            : failed
-                ? ('Ошибка подключения', state.error ?? 'Туннель не запустился')
-                : provisioning
-                    ? (xrayPath
-                        ? (state.serverId == 'reality'
-                            ? (
-                                'Ищем живые Reality-узлы…',
-                                'Перебираем VLESS Reality · список обновляется каждые 15 мин'
-                              )
-                            : (
-                                'Ищем живые узлы…',
-                                'Перебираем бесплатные V2Nodes-узлы…'
-                              ))
-                        : (
-                            'Готовим туннель…',
-                            'Бесплатная регистрация WireGuard-конфига…'
-                          ))
-                    : isBusy
-                        ? (
-                            state.phase == VpnPhase.disconnecting
-                                ? 'Выключаем…'
-                                : 'Подключаем…',
-                            'Открываем туннель…'
-                          )
-                        : ('VPN выключен', 'Готов к включению');
+        ? (
+            'Разрешение отклонено',
+            state.error ?? 'Система не дала VPN-разрешение',
+          )
+        : failed
+        ? ('Ошибка подключения', state.error ?? 'Туннель не запустился')
+        : provisioning
+        ? (xrayPath
+              ? (state.serverId == 'reality'
+                    ? (
+                        'Ищем живые Reality-узлы…',
+                        'Перебираем VLESS Reality · список обновляется каждые 15 мин',
+                      )
+                    : (
+                        'Ищем живые узлы…',
+                        'Перебираем бесплатные V2Nodes-узлы…',
+                      ))
+              : (
+                  'Готовим туннель…',
+                  'Бесплатная регистрация WireGuard-конфига…',
+                ))
+        : isBusy
+        ? (
+            state.phase == VpnPhase.disconnecting
+                ? 'Выключаем…'
+                : 'Подключаем…',
+            'Открываем туннель…',
+          )
+        : ('VPN выключен', 'Готов к включению');
 
     final btnLabel = isConnected
         ? 'Выключить VPN'
         : isBusy
-            ? (state.phase == VpnPhase.disconnecting
-                ? 'Выключаем…'
-                : 'Подключаем…')
-            : 'Включить VPN';
+        ? (state.phase == VpnPhase.disconnecting ? 'Выключаем…' : 'Подключаем…')
+        : 'Включить VPN';
 
     final accent = isConnected ? scheme.primary : scheme.error;
 
@@ -587,10 +593,11 @@ class _VpnToggleCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: (denied || failed
-                                ? scheme.error
-                                : scheme.onSurfaceVariant)
-                            .withValues(alpha: 0.85),
+                        color:
+                            (denied || failed
+                                    ? scheme.error
+                                    : scheme.onSurfaceVariant)
+                                .withValues(alpha: 0.85),
                       ),
                     ),
                   ],
@@ -616,7 +623,7 @@ class _VpnToggleCard extends ConsumerWidget {
                         ? [scheme.error, scheme.error.withValues(alpha: 0.85)]
                         : [
                             scheme.primary,
-                            scheme.primary.withValues(alpha: 0.85)
+                            scheme.primary.withValues(alpha: 0.85),
                           ],
                   ),
                   borderRadius: BorderRadius.circular(999),
@@ -635,8 +642,8 @@ class _VpnToggleCard extends ConsumerWidget {
                       isBusy
                           ? Icons.autorenew_rounded
                           : (isConnected
-                              ? Icons.stop_rounded
-                              : Icons.bolt_rounded),
+                                ? Icons.stop_rounded
+                                : Icons.bolt_rounded),
                       color: isConnected ? scheme.onError : scheme.onPrimary,
                       size: 20,
                     ),

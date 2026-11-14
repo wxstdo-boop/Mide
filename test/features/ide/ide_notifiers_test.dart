@@ -62,15 +62,23 @@ void main() {
 
       expect(
         notifier.createEntry(
-            parentPath: tmp.path, asDir: false, name: 'new.txt'),
+          parentPath: tmp.path,
+          asDir: false,
+          name: 'new.txt',
+        ),
         isNull,
       );
-      expect(File('${tmp.path}${Platform.pathSeparator}new.txt').existsSync(),
-          isTrue);
+      expect(
+        File('${tmp.path}${Platform.pathSeparator}new.txt').existsSync(),
+        isTrue,
+      );
 
       expect(
         notifier.createEntry(
-            parentPath: tmp.path, asDir: false, name: 'new.txt'),
+          parentPath: tmp.path,
+          asDir: false,
+          name: 'new.txt',
+        ),
         startsWith('Уже существует'),
       );
     });
@@ -113,19 +121,21 @@ void main() {
       expect(File(path).readAsStringSync(), 'hello world');
     });
 
-    test('opening the same path twice activates instead of duplicating',
-        () async {
-      final path = '${tmp.path}${Platform.pathSeparator}f.txt';
-      File(path).writeAsStringSync('a');
+    test(
+      'opening the same path twice activates instead of duplicating',
+      () async {
+        final path = '${tmp.path}${Platform.pathSeparator}f.txt';
+        File(path).writeAsStringSync('a');
 
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-      final notifier = container.read(ideTabsProvider.notifier);
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+        final notifier = container.read(ideTabsProvider.notifier);
 
-      await notifier.openFile(path);
-      await notifier.openFile(path);
-      expect(container.read(ideTabsProvider).tabs.length, 1);
-    });
+        await notifier.openFile(path);
+        await notifier.openFile(path);
+        expect(container.read(ideTabsProvider).tabs.length, 1);
+      },
+    );
 
     test('refuses to open a binary file', () async {
       final path = '${tmp.path}${Platform.pathSeparator}bin.dat';

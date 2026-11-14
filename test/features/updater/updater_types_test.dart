@@ -28,8 +28,7 @@ void main() {
         },
         {
           'name': 'mide-1.0.1-arm64-release.apk',
-          'browser_download_url':
-              'https://github.com/wxstdo-boop/Mide/releases/download/v1.0.1/app.apk',
+          'browser_download_url': 'https://github.com/wxstdo-boop/Mide/releases/download/v1.0.1/app.apk',
           'size': 1024,
         },
       ]);
@@ -86,14 +85,19 @@ void main() {
 
   group('UpdateAsset.sizeMb', () {
     test('renders kilobytes under one megabyte', () {
-      expect(const UpdateAsset(name: 'a', url: 'u', sizeBytes: 2048).sizeMb,
-          '2 КБ');
+      expect(
+        const UpdateAsset(name: 'a', url: 'u', sizeBytes: 2048).sizeMb,
+        '2 КБ',
+      );
     });
 
     test('renders megabytes at or above one megabyte', () {
       expect(
-        const UpdateAsset(name: 'a', url: 'u', sizeBytes: 2 * 1024 * 1024)
-            .sizeMb,
+        const UpdateAsset(
+          name: 'a',
+          url: 'u',
+          sizeBytes: 2 * 1024 * 1024,
+        ).sizeMb,
         '2.0 МБ',
       );
     });

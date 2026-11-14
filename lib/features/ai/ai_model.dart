@@ -9,8 +9,8 @@ class AiMessage {
   const AiMessage(this.role, this.text, {this.streaming = false});
 
   AiMessage copyWith({String? text, bool? streaming}) => AiMessage(
-        role,
-        text ?? this.text,
-        streaming: streaming ?? this.streaming,
-      );
+    role,
+    text ?? this.text,
+    streaming: streaming ?? this.streaming,
+  );
 }

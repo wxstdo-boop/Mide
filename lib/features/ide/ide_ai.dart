@@ -19,11 +19,7 @@ const String ideKiloKeyPlaceholder = 'Bearer PASTE_YOUR_FREE_KILO_KEY';
 const LlmProvider kiloProvider = LlmProvider(
   label: 'Kilo',
   baseUrl: 'https://api.kilo.ai/api/gateway',
-  models: [
-    'kilo-auto/free',
-    'minimax/minimax-m2.1:free',
-    'z-ai/glm-5:free',
-  ],
+  models: ['kilo-auto/free', 'minimax/minimax-m2.1:free', 'z-ai/glm-5:free'],
   authHeader: ideKiloKeyPlaceholder,
 );
 
@@ -79,8 +75,9 @@ List<IdeSlot> _ideSlots() {
 }
 
 /// Free Kilo API key (optional), persisted in secure storage.
-final kiloKeyProvider =
-    NotifierProvider<_KiloKeyNotifier, String>(_KiloKeyNotifier.new);
+final kiloKeyProvider = NotifierProvider<_KiloKeyNotifier, String>(
+  _KiloKeyNotifier.new,
+);
 
 class _KiloKeyNotifier extends Notifier<String> {
   static const _storage = FlutterSecureStorage(
@@ -148,13 +145,12 @@ class IdeAiState {
     String? error,
     bool clearError = false,
     String? providerLabel,
-  }) =>
-      IdeAiState(
-        messages: messages ?? this.messages,
-        busy: busy ?? this.busy,
-        error: clearError ? null : (error ?? this.error),
-        providerLabel: providerLabel ?? this.providerLabel,
-      );
+  }) => IdeAiState(
+    messages: messages ?? this.messages,
+    busy: busy ?? this.busy,
+    error: clearError ? null : (error ?? this.error),
+    providerLabel: providerLabel ?? this.providerLabel,
+  );
 }
 
 class IdeAiNotifier extends Notifier<IdeAiState> {
@@ -204,9 +200,9 @@ class IdeAiNotifier extends Notifier<IdeAiState> {
     final contextBlock = tab == null
         ? ''
         : '\n\nОткрытый файл: ${tab.path}\n```'
-            '${_ideLangHint(tab.path)}\n'
-            '${tab.content.length > 14000 ? tab.content.substring(0, 14000) : tab.content}'
-            '\n```';
+              '${_ideLangHint(tab.path)}\n'
+              '${tab.content.length > 14000 ? tab.content.substring(0, 14000) : tab.content}'
+              '\n```';
 
     final history = <Map<String, String>>[
       {'role': 'system', 'content': _ideSystemPrompt},
@@ -342,7 +338,6 @@ String _extOf(String path) {
   return i <= 0 ? '' : name.substring(i).toLowerCase();
 }
 
-final ideAiProvider =
-    NotifierProvider<IdeAiNotifier, IdeAiState>(IdeAiNotifier.new);
-
-
+final ideAiProvider = NotifierProvider<IdeAiNotifier, IdeAiState>(
+  IdeAiNotifier.new,
+);

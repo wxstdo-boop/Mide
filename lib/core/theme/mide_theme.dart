@@ -33,8 +33,16 @@ class MideTheme extends ThemeExtension<MideTheme> {
     if (other is! MideTheme) return this;
     return MideTheme(
       success: Color.lerp(success, other.success, t)!,
-      successContainer: Color.lerp(successContainer, other.successContainer, t)!,
-      onSuccessContainer: Color.lerp(onSuccessContainer, other.onSuccessContainer, t)!,
+      successContainer: Color.lerp(
+        successContainer,
+        other.successContainer,
+        t,
+      )!,
+      onSuccessContainer: Color.lerp(
+        onSuccessContainer,
+        other.onSuccessContainer,
+        t,
+      )!,
     );
   }
 }
@@ -49,7 +57,10 @@ const Color bloodySeed = Color(0xFFC62828);
 
 /// Bloody theme: Material 3 palette seeded with deep crimson, light or dark.
 ThemeData buildBloodyTheme(Brightness brightness) {
-  final scheme = ColorScheme.fromSeed(seedColor: bloodySeed, brightness: brightness);
+  final scheme = ColorScheme.fromSeed(
+    seedColor: bloodySeed,
+    brightness: brightness,
+  );
   return buildAppTheme(light: scheme, dark: scheme, brightness: brightness);
 }
 
@@ -66,8 +77,12 @@ ThemeData buildAppTheme({
   final isDark = brightness == Brightness.dark;
 
   final success = isDark ? const Color(0xFF3DDC84) : const Color(0xFF0F7B3F);
-  final successContainer = isDark ? const Color(0xFF0E4A27) : const Color(0xFFB7F0CB);
-  final onSuccessContainer = isDark ? const Color(0xFFC2F3D3) : const Color(0xFF043011);
+  final successContainer = isDark
+      ? const Color(0xFF0E4A27)
+      : const Color(0xFFB7F0CB);
+  final onSuccessContainer = isDark
+      ? const Color(0xFFC2F3D3)
+      : const Color(0xFF043011);
 
   const radius = 16.0;
 
@@ -106,14 +121,18 @@ ThemeData buildAppTheme({
       style: FilledButton.styleFrom(
         minimumSize: const Size(64, 48),
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
         textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
       ),
     ),
 
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
         textStyle: const TextStyle(fontWeight: FontWeight.w700),
       ),
     ),

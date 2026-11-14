@@ -30,12 +30,20 @@ class VpnSettingsStore {
   static Future<VpnSettings> _loadInternal() async {
     final key = await _storage.read(key: _keyApiKey) ?? '';
     final base = await _storage.read(key: _keyBaseUrl) ?? _defaultBaseUrl;
-    return VpnSettings(apiKey: key, baseUrl: base.trim().isEmpty ? _defaultBaseUrl : base.trim());
+    return VpnSettings(
+      apiKey: key,
+      baseUrl: base.trim().isEmpty ? _defaultBaseUrl : base.trim(),
+    );
   }
 
   Future<void> save(VpnSettings settings) async {
     await _storage.write(key: _keyApiKey, value: settings.apiKey.trim());
-    await _storage.write(key: _keyBaseUrl, value: settings.baseUrl.trim().isEmpty ? _defaultBaseUrl : settings.baseUrl.trim());
+    await _storage.write(
+      key: _keyBaseUrl,
+      value: settings.baseUrl.trim().isEmpty
+          ? _defaultBaseUrl
+          : settings.baseUrl.trim(),
+    );
   }
 
   Future<void> clear() async {

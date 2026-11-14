@@ -53,8 +53,10 @@ void main() {
       expect(slots.first.modelIndex, 0);
       // Ordering: provider index is non-decreasing across slots.
       for (var i = 1; i < slots.length; i++) {
-        expect(slots[i].providerIndex,
-            greaterThanOrEqualTo(slots[i - 1].providerIndex));
+        expect(
+          slots[i].providerIndex,
+          greaterThanOrEqualTo(slots[i - 1].providerIndex),
+        );
       }
     });
 
@@ -65,20 +67,23 @@ void main() {
   });
 
   group('OpenAiClient fast-skip', () {
-    test('throws 401 without touching the network when a key is missing',
-        () async {
-      final client = OpenAiClient();
-      await expectLater(
-        client.chat(
-          provider: horde,
-          model: horde.models.first,
-          messages: const [
-            {'role': 'user', 'content': 'hi'},
-          ],
-        ),
-        throwsA(
-            isA<LlmException>().having((e) => e.statusCode, 'statusCode', 401)),
-      );
-    });
+    test(
+      'throws 401 without touching the network when a key is missing',
+      () async {
+        final client = OpenAiClient();
+        await expectLater(
+          client.chat(
+            provider: horde,
+            model: horde.models.first,
+            messages: const [
+              {'role': 'user', 'content': 'hi'},
+            ],
+          ),
+          throwsA(
+            isA<LlmException>().having((e) => e.statusCode, 'statusCode', 401),
+          ),
+        );
+      },
+    );
   });
 }

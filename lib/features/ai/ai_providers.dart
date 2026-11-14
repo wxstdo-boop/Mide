@@ -1,4 +1,4 @@
-﻿// Ada (M.AI) chat session — rotates across Horde + Pollinations + LLM7 +
+// Ada (M.AI) chat session — rotates across Horde + Pollinations + LLM7 +
 // OVH. Non-streaming call; while waiting the UI shows a red thinking-blink,
 // then the full answer fades in. The Horde API key (free, from
 // stablehorde.net) is persisted separately and injected at request time;
@@ -41,14 +41,13 @@ class AiSessionState {
     bool? busy,
     bool? streaming,
     String? providerLabel,
-  }) =>
-      AiSessionState(
-        messages: messages ?? this.messages,
-        error: clearError == true ? null : (error ?? this.error),
-        busy: busy ?? this.busy,
-        streaming: streaming ?? this.streaming,
-        providerLabel: providerLabel ?? this.providerLabel,
-      );
+  }) => AiSessionState(
+    messages: messages ?? this.messages,
+    error: clearError == true ? null : (error ?? this.error),
+    busy: busy ?? this.busy,
+    streaming: streaming ?? this.streaming,
+    providerLabel: providerLabel ?? this.providerLabel,
+  );
 }
 
 class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
@@ -94,7 +93,9 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
       final msgs = <AiMessage>[
         for (final e in decoded)
           AiMessage(
-            e is Map && e['role'] == 'assistant' ? AiRole.assistant : AiRole.user,
+            e is Map && e['role'] == 'assistant'
+                ? AiRole.assistant
+                : AiRole.user,
             e is Map ? (e['text'] as String? ?? '') : '',
           ),
       ];
@@ -115,13 +116,17 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
         await _chatStore.delete(key: _chatKey);
         return;
       }
-      final tail =
-          msgs.length > _maxMessages ? msgs.sublist(msgs.length - _maxMessages) : msgs;
+      final tail = msgs.length > _maxMessages
+          ? msgs.sublist(msgs.length - _maxMessages)
+          : msgs;
       await _chatStore.write(
         key: _chatKey,
         value: jsonEncode([
           for (final m in tail)
-            {'role': m.role == AiRole.user ? 'user' : 'assistant', 'text': m.text},
+            {
+              'role': m.role == AiRole.user ? 'user' : 'assistant',
+              'text': m.text,
+            },
         ]),
       );
     } catch (_) {
@@ -187,10 +192,12 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
       {'role': 'system', 'content': systemPrompt},
       ...state.messages
           .where((m) => m.text.isNotEmpty)
-          .map((m) => {
-                'role': m.role == AiRole.user ? 'user' : 'assistant',
-                'content': m.text,
-              }),
+          .map(
+            (m) => {
+              'role': m.role == AiRole.user ? 'user' : 'assistant',
+              'content': m.text,
+            },
+          ),
     ];
   }
 
@@ -326,8 +333,10 @@ class PersonaArg {
 
 /// Factory for persona-specific chat sessions (e.g. the 3D companion tab).
 /// Each persona gets its own persisted conversation.
-final personaSessionProvider = NotifierProvider.family<AiSessionNotifier,
-    AiSessionState, PersonaArg>(AiSessionNotifier.new);
+final personaSessionProvider =
+    NotifierProvider.family<AiSessionNotifier, AiSessionState, PersonaArg>(
+      AiSessionNotifier.new,
+    );
 
 /// The Ada (AGI) session — a concrete instance of [personaSessionProvider].
 final aiSessionProvider = personaSessionProvider(
@@ -339,8 +348,9 @@ final aiSessionProvider = personaSessionProvider(
 
 // ── Horde API key (free from stablehorde.net), persisted in secure storage ─
 
-final hordeKeyProvider =
-    NotifierProvider<_HordeKeyNotifier, String>(_HordeKeyNotifier.new);
+final hordeKeyProvider = NotifierProvider<_HordeKeyNotifier, String>(
+  _HordeKeyNotifier.new,
+);
 
 class _HordeKeyNotifier extends Notifier<String> {
   static const _storage = FlutterSecureStorage(
@@ -379,4 +389,3 @@ class _HordeKeyNotifier extends Notifier<String> {
 
   Future<void> clear() => set('');
 }
-

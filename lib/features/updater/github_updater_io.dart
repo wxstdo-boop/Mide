@@ -23,16 +23,19 @@ class GithubUpdater {
   final Dio? dio;
   final String currentVersion;
 
-  static const MethodChannel _installerChannel =
-      MethodChannel('mide/update_installer');
+  static const MethodChannel _installerChannel = MethodChannel(
+    'mide/update_installer',
+  );
 
-  static Dio _makeDefault() => Dio(BaseOptions(
-        baseUrl: 'https://api.github.com',
-        receiveDataWhenStatusError: true,
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 60),
-        sendTimeout: const Duration(seconds: 20),
-      ));
+  static Dio _makeDefault() => Dio(
+    BaseOptions(
+      baseUrl: 'https://api.github.com',
+      receiveDataWhenStatusError: true,
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 60),
+      sendTimeout: const Duration(seconds: 20),
+    ),
+  );
 
   Dio get _client => dio ?? _makeDefault();
 
@@ -43,13 +46,17 @@ class GithubUpdater {
     client.options.headers['Accept'] = 'application/vnd.github+json';
 
     try {
-      final res = await client.get('/repos/${GithubConfig.path}/releases/latest');
+      final res = await client.get(
+        '/repos/${GithubConfig.path}/releases/latest',
+      );
       final data = res.data;
       if (data is! Map) {
         return UpdateCheckResult.failure('Неожиданный ответ GitHub API');
       }
       final tag = (data['tag_name'] ?? '').toString().trim();
-      if (tag.isEmpty) return UpdateCheckResult.failure('GitHub: пустая версия');
+      if (tag.isEmpty) {
+        return UpdateCheckResult.failure('GitHub: пустая версия');
+      }
 
       final htmlUrl = (data['html_url'] ?? '').toString();
       final body = (data['body'] ?? '').toString();
@@ -58,7 +65,8 @@ class GithubUpdater {
       final comparison = compareVersions(version, currentVersion);
       if (comparison == null) {
         return UpdateCheckResult.failure(
-            'Не удалось сравнить версии $currentVersion и $version');
+          'Не удалось сравнить версии $currentVersion и $version',
+        );
       }
       if (comparison <= 0) {
         return UpdateCheckResult.upToDate(
@@ -94,7 +102,8 @@ class GithubUpdater {
       if (status == 404) return UpdateCheckResult.noReleases();
       final msg = e.message ?? '';
       return UpdateCheckResult.failure(
-          msg.isNotEmpty ? msg : 'Нет соединения с GitHub');
+        msg.isNotEmpty ? msg : 'Нет соединения с GitHub',
+      );
     }
   }
 
@@ -114,10 +123,9 @@ class GithubUpdater {
     }
 
     if (io.Platform.isAndroid && asset.name.toLowerCase().endsWith('.apk')) {
-      await _installerChannel.invokeMethod<void>(
-        'installApk',
-        {'path': target},
-      );
+      await _installerChannel.invokeMethod<void>('installApk', {
+        'path': target,
+      });
     } else {
       await _launch(target, asset.name);
     }
@@ -141,7 +149,8 @@ class GithubUpdater {
     if (io.Platform.isAndroid || io.Platform.isIOS) {
       // Application downloads dir; the install dialog picks it up.
       final app = await getApplicationDocumentsDirectory();
-      final d = io.Directory('${app.path}/downloads')..createSync(recursive: true);
+      final d = io.Directory('${app.path}/downloads')
+        ..createSync(recursive: true);
       return d.path;
     }
     return (await getDownloadsDirectory())?.path ??
@@ -157,7 +166,9 @@ class GithubUpdater {
       await io.Process.start('open', [path]);
     } else if (io.Platform.isLinux) {
       if (lower.endsWith('.deb')) {
-        await _runOr('gdebi', [path], fallback: io.Process.run('sudo', ['dpkg', '-i', path]));
+        await _runOr('gdebi', [
+          path,
+        ], fallback: io.Process.run('sudo', ['dpkg', '-i', path]));
       } else if (lower.endsWith('.rpm')) {
         await io.Process.run('sudo', ['rpm', '-i', path]);
       } else {
@@ -168,8 +179,11 @@ class GithubUpdater {
     }
   }
 
-  Future<void> _runOr(String bin, List<String> args,
-      {required Future<io.ProcessResult> fallback}) async {
+  Future<void> _runOr(
+    String bin,
+    List<String> args, {
+    required Future<io.ProcessResult> fallback,
+  }) async {
     try {
       await io.Process.run(bin, args);
     } catch (_) {

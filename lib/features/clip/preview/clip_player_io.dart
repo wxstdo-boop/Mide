@@ -49,7 +49,9 @@ class _ClipPreviewState extends State<ClipPreview> {
     final controller = VideoPlayerController.file(File(clip.path));
     try {
       await controller.initialize();
-      await controller.seekTo(Duration(milliseconds: (clip.trimStart * 1000).round()));
+      await controller.seekTo(
+        Duration(milliseconds: (clip.trimStart * 1000).round()),
+      );
       await controller.setVolume(clip.muted ? 0 : clip.volume);
       await controller.setPlaybackSpeed(clip.speed.clamp(0.25, 4.0));
       if (!mounted) {
@@ -82,10 +84,7 @@ class _ClipPreviewState extends State<ClipPreview> {
         aspectRatio: controller.value.aspectRatio,
         child: Stack(
           alignment: Alignment.bottomCenter,
-          children: [
-            VideoPlayer(controller),
-            _transport(scheme, controller),
-          ],
+          children: [VideoPlayer(controller), _transport(scheme, controller)],
         ),
       );
     }
@@ -117,7 +116,9 @@ class _ClipPreviewState extends State<ClipPreview> {
                 iconSize: 22,
                 color: Colors.white,
                 onPressed: () => playing ? c.pause() : c.play(),
-                icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                icon: Icon(
+                  playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                ),
               ),
               Text(
                 '${_fmt(c.value.position)} / ${_fmt(c.value.duration)}',

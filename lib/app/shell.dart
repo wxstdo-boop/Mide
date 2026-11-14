@@ -70,7 +70,9 @@ class _AppHeader extends StatelessWidget {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: scheme.secondaryContainer,
                         borderRadius: BorderRadius.circular(999),
@@ -170,7 +172,8 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
                   color: scheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                      color: scheme.outlineVariant.withValues(alpha: 0.6)),
+                    color: scheme.outlineVariant.withValues(alpha: 0.6),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.10),

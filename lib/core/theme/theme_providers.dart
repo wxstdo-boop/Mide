@@ -64,8 +64,8 @@ class ThemeChoiceNotifier extends Notifier<MideThemeChoice> {
   Future<void> _writeChain = Future.value();
 
   ThemeChoiceNotifier({MideThemeChoice? seed})
-      : _seed = seed,
-        _userChose = seed != null {
+    : _seed = seed,
+      _userChose = seed != null {
     // A non-null seed already reflects the persisted choice, so treat it as
     // "the user chose this value" and skip the background reload.
   }
@@ -87,7 +87,9 @@ class ThemeChoiceNotifier extends Notifier<MideThemeChoice> {
   Future<void> select(MideThemeChoice choice) async {
     _userChose = true;
     state = choice;
-    _writeChain = _writeChain.then((_) => _storage.write(key: _key, value: choice.name));
+    _writeChain = _writeChain.then(
+      (_) => _storage.write(key: _key, value: choice.name),
+    );
     try {
       await _writeChain;
     } catch (_) {
@@ -98,5 +100,5 @@ class ThemeChoiceNotifier extends Notifier<MideThemeChoice> {
 
 final themeChoiceProvider =
     NotifierProvider<ThemeChoiceNotifier, MideThemeChoice>(
-  ThemeChoiceNotifier.new,
-);
+      ThemeChoiceNotifier.new,
+    );

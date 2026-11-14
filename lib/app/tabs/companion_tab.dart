@@ -57,9 +57,7 @@ class _CompanionTabState extends ConsumerState<CompanionTab> {
     if (text.trim().isEmpty) return;
     final session = ref.read(personaSessionProvider(kCompanionPersona));
     if (session.busy) return;
-    ref
-        .read(personaSessionProvider(kCompanionPersona).notifier)
-        .send(text);
+    ref.read(personaSessionProvider(kCompanionPersona).notifier).send(text);
     _input.clear();
     setState(() {});
   }
@@ -68,8 +66,9 @@ class _CompanionTabState extends ConsumerState<CompanionTab> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final session = ref.watch(personaSessionProvider(kCompanionPersona));
-    final notifier =
-        ref.read(personaSessionProvider(kCompanionPersona).notifier);
+    final notifier = ref.read(
+      personaSessionProvider(kCompanionPersona).notifier,
+    );
     final mood = _moods[_mood];
 
     // The last assistant line is her "voice"; fall back to a greeting.
@@ -80,8 +79,8 @@ class _CompanionTabState extends ConsumerState<CompanionTab> {
     final speech = session.error != null
         ? 'Мира задумалась… повтори чуть позже!'
         : (lastAssistant.text.isNotEmpty
-            ? lastAssistant.text
-            : 'Привет! Я Мира — выбери настроение и напиши мне.');
+              ? lastAssistant.text
+              : 'Привет! Я Мира — выбери настроение и напиши мне.');
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -295,15 +294,15 @@ class _CompanionPainter extends CustomPainter {
 
     // Aura behind the figure.
     final auraPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          accent.withValues(alpha: 0.34),
-          accent.withValues(alpha: 0.0),
-        ],
-      ).createShader(Rect.fromCircle(
-        center: Offset(cx, cy),
-        radius: scale * 0.62,
-      ));
+      ..shader =
+          RadialGradient(
+            colors: [
+              accent.withValues(alpha: 0.34),
+              accent.withValues(alpha: 0.0),
+            ],
+          ).createShader(
+            Rect.fromCircle(center: Offset(cx, cy), radius: scale * 0.62),
+          );
     canvas.drawCircle(Offset(cx, cy), scale * 0.62, auraPaint);
 
     final cosY = math.cos(yaw);
@@ -318,13 +317,15 @@ class _CompanionPainter extends CustomPainter {
       final ry = p.y + bob;
       final depth = rz;
       final persp = _cam / (_cam + depth);
-      projected.add(_Proj(
-        sx: cx + rx * scale * persp,
-        sy: cy + ry * scale * persp,
-        r: b.r * scale * persp,
-        depth: depth,
-        role: b.role,
-      ));
+      projected.add(
+        _Proj(
+          sx: cx + rx * scale * persp,
+          sy: cy + ry * scale * persp,
+          r: b.r * scale * persp,
+          depth: depth,
+          role: b.role,
+        ),
+      );
     }
     projected.sort((a, b) => b.depth.compareTo(a.depth));
 
@@ -435,9 +436,11 @@ class _MoodChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(mood.icon,
-                  size: 16,
-                  color: selected ? mood.accent : scheme.onSurfaceVariant),
+              Icon(
+                mood.icon,
+                size: 16,
+                color: selected ? mood.accent : scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 6),
               Text(
                 mood.label,
@@ -596,8 +599,10 @@ class _CompanionComposer extends StatelessWidget {
               isDense: true,
               filled: true,
               fillColor: scheme.surfaceContainerHigh,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(999),
                 borderSide: BorderSide.none,

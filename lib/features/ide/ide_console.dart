@@ -40,7 +40,9 @@ class _IdeConsolePanelState extends ConsumerState<IdeConsolePanel> {
     return Container(
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
-        border: Border(top: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
+        border: Border(
+          top: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,12 +68,18 @@ class _IdeConsolePanelState extends ConsumerState<IdeConsolePanel> {
                   SizedBox(
                     width: 12,
                     height: 12,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: scheme.primary),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: scheme.primary,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   Text(
                     'выполняется…',
-                    style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
                 const Spacer(),
@@ -79,7 +87,10 @@ class _IdeConsolePanelState extends ConsumerState<IdeConsolePanel> {
                   onPressed: cs.running
                       ? null
                       : () {
-                          final path = ref.read(ideTabsProvider).activeTab?.path;
+                          final path = ref
+                              .read(ideTabsProvider)
+                              .activeTab
+                              ?.path;
                           if (path != null) {
                             ref.read(ideConsoleProvider.notifier).run(path);
                           }
@@ -146,9 +157,9 @@ class _IdeConsolePanelState extends ConsumerState<IdeConsolePanel> {
                                     ],
                                     color: line.startsWith('[')
                                         ? (line.contains('❌') ||
-                                                line.contains('код 1')
-                                            ? scheme.error
-                                            : scheme.tertiary)
+                                                  line.contains('код 1')
+                                              ? scheme.error
+                                              : scheme.tertiary)
                                         : scheme.onSurfaceVariant,
                                   ),
                                 ),
@@ -164,5 +175,3 @@ class _IdeConsolePanelState extends ConsumerState<IdeConsolePanel> {
     );
   }
 }
-
-
