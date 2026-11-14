@@ -30,13 +30,15 @@ const LlmProvider pollinations = LlmProvider(
 );
 
 /// LLM7.io — free OpenAI-compatible gateway (keyless for some models).
+/// Model ids are checked against `GET /v1/models`; a stale id just burns a
+/// rotation slot on a 404, so keep this list to live models.
 const LlmProvider llm7 = LlmProvider(
   label: 'LLM7',
   baseUrl: 'https://api.llm7.io/v1',
   models: [
     'minimax-m2.7',
     'DeepSeek-V4-Flash-0731',
-    'gemini-3.1-flash-lite',
+    'gemini-3-flash',
     'gemma4:31b',
   ],
 );
@@ -47,7 +49,6 @@ const LlmProvider ovh = LlmProvider(
   baseUrl: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
   models: [
     'gpt-oss-120b',
-    'Qwen3-Coder-30B-A3B-Instruct',
     'Qwen3.6-27B',
     'Mistral-Small-3.2-24B-Instruct-2506',
     'Meta-Llama-3_3-70B-Instruct',
