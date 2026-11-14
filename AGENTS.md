@@ -53,7 +53,9 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
 
 ## Mide — build and layout
 
-- Flutter app (Dart 3.5+). Validate with `flutter analyze` and `flutter test`.
+- Flutter app (Dart 3.13+ / Flutter 3.47+; CI and releases pin Flutter
+  3.50.0). Validate with `dart format --set-exit-if-changed lib test`,
+  `flutter analyze` and `flutter test`.
 - Material widgets come from `package:material_ui/material_ui.dart` (the
   standalone Material library; `package:flutter/material.dart` is deprecated).
   Import it directly in libraries, or rely on `main.dart`'s import for `part`s.
@@ -82,3 +84,18 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
     both keep the release APK near 30 MB instead of 200 MB.
 - Tests live under `test/features/...` mirroring `lib/features/...`; pure logic
   is unit-tested, the IDE notifiers are tested against a temp directory.
+
+## Mide — CI and releases
+
+- `.github/workflows/ci.yml` runs on pull requests and non-main branches:
+  formatting check, `flutter analyze`, `flutter test`, plus a debug APK build
+  so a broken Gradle/AGP/Kotlin combination fails on the PR.
+- `.github/workflows/release-ship.yml` runs on every push to `main`. It reads
+  the version from `pubspec.yaml` (1.0.4+5 → v1.0.4), skips if that tag
+  already exists, then builds the signed arm64 release APK and publishes a
+  GitHub Release with the APK and its `.sha256`. Bumping the version and
+  pushing is all a release needs; the in-app updater picks the tag up.
+- Android signing comes from repository secrets (`ANDROID_KEYSTORE_BASE64`,
+  `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`);
+  the build fails fast if any are missing.
+- Both workflows pin `FLUTTER_VERSION` so CI and releases share one toolchain.
