@@ -12,6 +12,14 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-ship
+  cancel-in-progress: false
+
+env:
+  # Pinned so releases use the exact toolchain that CI validates.
+  FLUTTER_VERSION: 3.50.0
+
 jobs:
   build-and-ship:
     runs-on: ubuntu-latest
@@ -40,16 +48,28 @@ jobs:
         if: steps.tag.outputs.exists == 'true'
         run: echo "v${{ steps.version.outputs.value }} уже вышла — релиз не дублируем"
 
+      - name: Set up Java
+        if: steps.tag.outputs.exists != 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Set up Flutter
         if: steps.tag.outputs.exists != 'true'
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
       - name: Pub get
         if: steps.tag.outputs.exists != 'true'
         run: flutter pub get
+
+      - name: Check formatting
+        if: steps.tag.outputs.exists != 'true'
+        run: dart format --output=none --set-exit-if-changed lib test
 
       - name: Analyze
         if: steps.tag.outputs.exists != 'true'

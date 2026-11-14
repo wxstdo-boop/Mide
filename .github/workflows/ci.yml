@@ -1,8 +1,9 @@
 name: CI
 
-# Fast quality gate for pull requests and feature branches: static analysis
-# plus the unit/widget test suite. No secrets or release steps — this runs on
-# every branch so problems surface before a merge or a release tag.
+# Quality gate for pull requests and feature branches: formatting, static
+# analysis, the unit/widget test suite, and a debug APK build so a broken
+# Gradle/AGP/Kotlin combination fails here instead of on the release run.
+# No secrets and no publishing — safe to run on every branch.
 on:
   pull_request:
   push:
@@ -16,9 +17,14 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Pinned so CI and the release build use the exact same toolchain.
+  FLUTTER_VERSION: 3.50.0
+
 jobs:
   analyze-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,14 +32,46 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
       - name: Pub get
         run: flutter pub get
 
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+
       - name: Analyze
         run: flutter analyze
 
       - name: Test
         run: flutter test
+
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      # A debug build needs no signing config and exercises the full Android
+      # toolchain (Gradle, AGP, Kotlin, native plugins) for the release ABI.
+      - name: Build debug APK (arm64)
+        run: flutter build apk --debug --target-platform android-arm64
