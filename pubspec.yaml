@@ -1,7 +1,7 @@
 name: mide
 description: VPN client with API key configuration for your provider.
 publish_to: 'none'
-version: 1.0.5+6
+version: 1.0.6+7
 
 environment:
   # material_ui (the standalone Material library) requires Dart >=3.13 and
