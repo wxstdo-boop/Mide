@@ -42,11 +42,13 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // The FFmpeg plugin ships prebuilt .so files for every ABI. Without
-        // this filter all of them (armeabi-v7a, arm64-v8a, x86_64) land in
-        // the APK even though the release build targets arm64 only.
+        // The FFmpeg plugin ships prebuilt .so files for every ABI, and the
+        // Flutter Gradle plugin seeds abiFilters with all of them, so the
+        // release APK would carry armeabi-v7a, arm64-v8a and x86_64. Clear the
+        // set and keep only the ABI the release build targets.
         ndk {
-            abiFilters += listOf("arm64-v8a")
+            abiFilters.clear()
+            abiFilters.add("arm64-v8a")
         }
     }
 
