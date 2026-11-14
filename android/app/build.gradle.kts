@@ -41,6 +41,13 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // The FFmpeg plugin ships prebuilt .so files for every ABI. Without
+        // this filter all of them (armeabi-v7a, arm64-v8a, x86_64) land in
+        // the APK even though the release build targets arm64 only.
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     signingConfigs {

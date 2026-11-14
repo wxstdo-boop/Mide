@@ -4,7 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_color
-  ffmpeg_kit_flutter_new
+  ffmpeg_kit_flutter_new_min_gpl
   flutter_secure_storage_windows
   url_launcher_windows
   wireguard_flutter_pro

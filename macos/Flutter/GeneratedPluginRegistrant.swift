@@ -6,7 +6,7 @@ import FlutterMacOS
 import Foundation
 
 import dynamic_color
-import ffmpeg_kit_flutter_new
+import ffmpeg_kit_flutter_new_min_gpl
 import file_picker
 import flutter_secure_storage_macos
 import url_launcher_macos

@@ -76,6 +76,9 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
     persisted conversation. `aiSessionProvider` is the Ada instance.
   - `features/clip` — Clip Studio. `clip_models.dart` / `clip_ffmpeg.dart` are
     pure and unit-tested; `clip_export_io.dart` is the only FFmpeg/filesystem
-    touchpoint and is behind the `clip_export.dart` conditional facade.
+    touchpoint and is behind the `clip_export.dart` conditional facade. The
+    build uses `ffmpeg_kit_flutter_new_min_gpl` (core + x264), not the default
+    full-GPL package, and the Android `abiFilters` pin the APK to `arm64-v8a`;
+    both keep the release APK near 30 MB instead of 200 MB.
 - Tests live under `test/features/...` mirroring `lib/features/...`; pure logic
   is unit-tested, the IDE notifiers are tested against a temp directory.

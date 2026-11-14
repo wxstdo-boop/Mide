@@ -1,7 +1,7 @@
 name: mide
 description: VPN client with API key configuration for your provider.
 publish_to: 'none'
-version: 1.0.2+3
+version: 1.0.3+4
 
 environment:
   # material_ui (the standalone Material library) requires Dart >=3.13 and
@@ -26,7 +26,9 @@ dependencies:
   # On the Web platform it degrades to a status indicator only.
   wireguard_flutter_pro: ^0.1.2
   cryptography: ^2.9.0
-  ffmpeg_kit_flutter_new: ^4.6.8
+  # Minimal GPL build: core FFmpeg + the GPL video codecs Clip Studio needs
+  # (libx264). The default package bundles every codec and triples the APK.
+  ffmpeg_kit_flutter_new_min_gpl: ^2.6.8
   video_player: ^2.14.1
 
 dev_dependencies:
