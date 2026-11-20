@@ -38,7 +38,7 @@
 
 Финальный выбор: **Google ADK** (если Google) / **Pydantic AI** (если не Google).
 
-## ДЛЯ MIDE (вкладка AGI) — SDK под Dart/Flutter
+## ДЛЯ MIDE (вкладка CRY) — SDK под Dart/Flutter
 ВАЖНО про депрекации (проверено 19.08.2026):
 - `google_generative_ai` — ЗАДЕПРЕКЕЙЧЕН (Google не развивает, заменили на firebase_vertexai → тот тоже discontinued → теперь `firebase_ai`).
 - `firebase_ai` (официальный) — минусы: нужен полный Firebase-проект + App Check; платформы Android/iOS/web/macOS, Windows-десктопа НЕТ.
