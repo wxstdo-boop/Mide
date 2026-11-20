@@ -9,14 +9,14 @@ part of '../../main.dart';
 // renders normalised intermediates that are concatenated with `-c copy`.
 // ---------------------------------------------------------------------------
 
-class ClipStudioTab extends ConsumerStatefulWidget {
-  const ClipStudioTab({super.key});
+class ClipStudioPage extends ConsumerStatefulWidget {
+  const ClipStudioPage({super.key});
 
   @override
-  ConsumerState<ClipStudioTab> createState() => _ClipStudioTabState();
+  ConsumerState<ClipStudioPage> createState() => _ClipStudioPageState();
 }
 
-class _ClipStudioTabState extends ConsumerState<ClipStudioTab> {
+class _ClipStudioPageState extends ConsumerState<ClipStudioPage> {
   int _selected = 0;
   bool _picking = false;
 
@@ -103,6 +103,7 @@ class _ClipStudioTabState extends ConsumerState<ClipStudioTab> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: _AppHeader(
+                leading: const _BackArrow(),
                 image: 'assets/icon/mide.png',
                 title: 'Clip Studio',
                 version: appVersionLabel,

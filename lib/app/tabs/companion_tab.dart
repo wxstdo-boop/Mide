@@ -35,14 +35,14 @@ const List<_Mood> _moods = <_Mood>[
   _Mood('Печаль', Icons.water_drop_rounded, Color(0xFF6FA8FF)),
 ];
 
-class CompanionTab extends ConsumerStatefulWidget {
-  const CompanionTab({super.key});
+class CompanionPage extends ConsumerStatefulWidget {
+  const CompanionPage({super.key});
 
   @override
-  ConsumerState<CompanionTab> createState() => _CompanionTabState();
+  ConsumerState<CompanionPage> createState() => _CompanionPageState();
 }
 
-class _CompanionTabState extends ConsumerState<CompanionTab> {
+class _CompanionPageState extends ConsumerState<CompanionPage> {
   final _input = TextEditingController();
   int _mood = 0;
 
@@ -91,6 +91,7 @@ class _CompanionTabState extends ConsumerState<CompanionTab> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: _AppHeader(
+                leading: const _BackArrow(),
                 image: 'assets/icon/mide.png',
                 title: 'Мира',
                 version: '3D',

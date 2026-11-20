@@ -67,8 +67,10 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
   - `lib/app/shell.dart` — header, pill nav (5 tabs), entrance animation.
   - `lib/app/tabs/vpn_tab.dart` — NPV section.
   - `lib/app/tabs/mearn_tab.dart` — Earn section.
-  - `lib/app/tabs/companion_tab.dart` — 3D companion («Мира») section.
-  - `lib/app/tabs/clip_studio_tab.dart` — Clip Studio (video editor) section.
+  - `lib/app/tabs/companion_tab.dart` — 3D companion («Мира»), a page pushed
+    from the VPN header (`CompanionPage`), not a bottom-bar tab.
+  - `lib/app/tabs/clip_studio_tab.dart` — Clip Studio (video editor), pushed
+    from the VPN header (`ClipStudioPage`).
   - `lib/app/pages/settings_page.dart` — settings, theme carousel, setup, updater.
 - `lib/core/` — theme (Material You) and the persisted active-tab state.
 - `lib/features/{ai,clip,ide,updater,vpn}/` — feature code; platform-split files

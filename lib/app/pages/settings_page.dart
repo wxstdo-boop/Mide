@@ -66,6 +66,14 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   SizedBox(height: 14),
                   _UpdateSection(),
+                  SizedBox(height: 28),
+                  _SectionTitle(
+                    icon: Icons.mail_rounded,
+                    title: 'Связь',
+                    subtitle: 'Написать нам напрямую',
+                  ),
+                  SizedBox(height: 14),
+                  _ContactCard(),
                 ],
               ),
             ),
@@ -439,7 +447,15 @@ class _ThemeCarouselState extends ConsumerState<ThemeCarousel> {
     super.dispose();
   }
 
+  /// Applies the theme for [page]. Called only from `onPageChanged`, i.e.
+  /// when the carousel actually settles on a card — not for every frame of a
+  /// programmatic `animateToPage`, which used to fire the theme swap several
+  /// times while the cards were still sliding.
   void _select(int page) {
+    if (_page == page &&
+        ref.read(themeChoiceProvider) == MideThemeChoice.values[page]) {
+      return;
+    }
     setState(() => _page = page);
     ref.read(themeChoiceProvider.notifier).select(MideThemeChoice.values[page]);
   }
@@ -449,17 +465,6 @@ class _ThemeCarouselState extends ConsumerState<ThemeCarousel> {
     final scheme = Theme.of(context).colorScheme;
     final choice = ref.watch(themeChoiceProvider);
     final choiceIndex = MideThemeChoice.values.indexOf(choice);
-    if (choiceIndex != _page) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || !_controller.hasClients) return;
-        _controller.animateToPage(
-          choiceIndex,
-          duration: const Duration(milliseconds: 480),
-          curve: Curves.easeInOutCubic,
-        );
-        setState(() => _page = choiceIndex);
-      });
-    }
     return Column(
       children: [
         SizedBox(
@@ -474,10 +479,11 @@ class _ThemeCarouselState extends ConsumerState<ThemeCarousel> {
                 choice: item,
                 selected: choiceIndex == index,
                 onTap: () {
+                  if (index == _page) return;
                   _controller.animateToPage(
                     index,
-                    duration: const Duration(milliseconds: 420),
-                    curve: Curves.easeInOutCubic,
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeOutCubic,
                   );
                 },
               );
@@ -490,8 +496,8 @@ class _ThemeCarouselState extends ConsumerState<ThemeCarousel> {
           children: List.generate(MideThemeChoice.values.length, (i) {
             final active = i == _page;
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 480),
-              curve: Curves.easeInOutCubic,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
               margin: const EdgeInsets.symmetric(horizontal: 3),
               width: active ? 22 : 8,
               height: 8,
@@ -525,11 +531,11 @@ class _ThemeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = ColorScheme.fromSeed(
       seedColor: bloodySeed,
-      brightness: choice.isDark ? Brightness.dark : Brightness.light,
+      brightness: choice.previewBrightness(Theme.of(context).brightness),
     );
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 480),
-      curve: Curves.easeInOutCubic,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
       margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
@@ -671,6 +677,60 @@ class _ThemeCard extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Settings: the "Связь" section ─────────────────────────────────────────────
+
+/// Mail link, moved here from the VPN header so the header has room for the
+/// 3D and Clip shortcuts.
+class _ContactCard extends StatelessWidget {
+  const _ContactCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () async {
+          final uri = Uri(
+            scheme: 'mailto',
+            path: 'hello@mide.app',
+            queryParameters: {'subject': 'Mide VPN'},
+          );
+          try {
+            await launchUrl(uri);
+          } catch (_) {}
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Icon(Icons.alternate_email_rounded, color: scheme.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'hello@mide.app',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.open_in_new_rounded,
+                size: 18,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
           ),
         ),
       ),

@@ -12,7 +12,7 @@ import 'package:mide/main.dart';
 Future<void> pumpApp(WidgetTester tester) async {
   await tester.pumpWidget(const ProviderScope(child: MideApp()));
   await tester.pump();
-  await tester.pump(const Duration(milliseconds: 2900));
+  await tester.pump(const Duration(milliseconds: 1800));
   await tester.pumpAndSettle();
 }
 
@@ -63,12 +63,16 @@ void main() {
           .value;
 
       // Hold phase: the splash must be fully opaque, not half-transparent.
-      await tester.pump(const Duration(milliseconds: 1200));
+      // Hold runs to ~62% of the timeline, and the easeInOutCubic curve
+      // shifts the sample earlier still; 700ms is safely inside it.
+      await tester.pump(const Duration(milliseconds: 700));
       expect(overlayOpacity(), closeTo(1.0, 0.001));
 
       final samples = <double>[];
-      for (var i = 0; i < 8; i++) {
-        await tester.pump(const Duration(milliseconds: 150));
+      // Sample inside the exit window (990ms → 1600ms); overshooting it would
+      // find the overlay already removed from the tree.
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
         samples.add(overlayOpacity());
       }
 
@@ -156,12 +160,34 @@ void main() {
       await pumpApp(tester);
       expect(activeTab(tester), 1); // NPV by default
 
-      await tester.tap(find.text('3D'));
+      await tester.tap(find.text('CRY'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 700));
 
-      expect(activeTab(tester), 3);
+      expect(activeTab(tester), 0);
+      expect(find.text('Ada Cry (Ада Край)'), findsOneWidget);
+    });
+
+    testWidgets('3D and Clip open from the VPN header and come back', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      expect(activeTab(tester), 1);
+
+      await tester.tap(find.byIcon(Icons.view_in_ar_rounded));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('Мира'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('Мира'), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.video_settings_rounded));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('Clip Studio'), findsOneWidget);
     });
 
     testWidgets('pressing a pill shows crimson feedback without switching', (
@@ -173,12 +199,12 @@ void main() {
       // Hold the finger down: the tab must not switch until release, but the
       // crimson highlight has to be painted.
       final gesture = await tester.startGesture(
-        tester.getCenter(find.text('Clip')),
+        tester.getCenter(find.text('Earn')),
       );
       await tester.pump(const Duration(milliseconds: 120));
 
       final ink = tester.widget<InkWell>(
-        find.ancestor(of: find.text('Clip'), matching: find.byType(InkWell)),
+        find.ancestor(of: find.text('Earn'), matching: find.byType(InkWell)),
       );
       expect(ink.splashColor, isNotNull);
       expect(ink.highlightColor, isNotNull);
@@ -190,20 +216,20 @@ void main() {
       await gesture.up();
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 700));
-      expect(activeTab(tester), 4);
+      expect(activeTab(tester), 2);
     });
 
     testWidgets('rapid taps settle on the last pill', (tester) async {
       await pumpApp(tester);
 
-      for (final label in ['CRY', 'Earn', '3D', 'Clip']) {
+      for (final label in ['CRY', 'Earn', 'NPV', 'CRY']) {
         await tester.tap(find.text(label));
         await tester.pump(const Duration(milliseconds: 90));
       }
       await tester.pump(const Duration(milliseconds: 900));
 
-      expect(activeTab(tester), 4);
-      expect(find.text('Clip Studio'), findsOneWidget);
+      expect(activeTab(tester), 0);
+      expect(find.text('Ada Cry (Ада Край)'), findsOneWidget);
     });
   });
 

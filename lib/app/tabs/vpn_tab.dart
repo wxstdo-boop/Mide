@@ -4,52 +4,16 @@ part of '../../main.dart';
 class VpnTab extends ConsumerWidget {
   const VpnTab({super.key});
 
-  Future<void> _openMail(BuildContext context) async {
-    const email = 'hello@mide.app';
-    final uri = Uri(
-      scheme: 'mailto',
-      path: email,
-      queryParameters: {'subject': 'Mide VPN'},
-    );
-    try {
-      await launchUrl(uri);
-    } catch (_) {}
-  }
-
   void _showSettings(BuildContext context) {
-    _pushPage(context, const SettingsPage());
+    pushMidePage(context, const SettingsPage());
   }
 
-  /// Push a full-screen page with the signature slide + fade + scale transition
-  /// (reversed automatically on pop).
-  static void _pushPage(BuildContext context, Widget page) {
-    Navigator.of(context).push(
-      PageRouteBuilder<void>(
-        transitionDuration: const Duration(milliseconds: 480),
-        reverseTransitionDuration: const Duration(milliseconds: 400),
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, animation, __, child) {
-          final curved = CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-            reverseCurve: Curves.easeInCubic,
-          );
-          return FadeTransition(
-            opacity: curved,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.09),
-                end: Offset.zero,
-              ).animate(curved),
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 0.97, end: 1).animate(curved),
-                child: child,
-              ),
-            ),
-          );
-        },
-      ),
-    );
+  void _showCompanion(BuildContext context) {
+    pushMidePage(context, const CompanionPage());
+  }
+
+  void _showClipStudio(BuildContext context) {
+    pushMidePage(context, const ClipStudioPage());
   }
 
   @override
@@ -75,8 +39,15 @@ class VpnTab extends ConsumerWidget {
                   version: appVersionLabel,
                   actions: [
                     IconButton.filledTonal(
-                      onPressed: () => _openMail(context),
-                      icon: const Icon(Icons.mail_rounded),
+                      tooltip: '3D',
+                      onPressed: () => _showCompanion(context),
+                      icon: const Icon(Icons.view_in_ar_rounded),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      tooltip: 'Clip Studio',
+                      onPressed: () => _showClipStudio(context),
+                      icon: const Icon(Icons.video_settings_rounded),
                     ),
                     const SizedBox(width: 8),
                     IconButton.filledTonal(

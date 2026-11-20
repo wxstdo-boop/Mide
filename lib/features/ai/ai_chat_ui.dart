@@ -144,7 +144,7 @@ class _AiTabState extends ConsumerState<AiTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 14),
-            // Row 1: icon + MIDE + AI ... "⋮" topic button (clear, alone).
+            // Row 1: icon + persona name + AI badge ... topic buttons.
             Row(
               children: [
                 SizedBox(
@@ -153,7 +153,12 @@ class _AiTabState extends ConsumerState<AiTab> {
                   child: Image.asset('assets/icon/mide.png', fit: BoxFit.cover),
                 ),
                 const SizedBox(width: 12),
-                const _ShimmerTitle(text: 'MIDE'),
+                const Flexible(
+                  child: _ShimmerTitle(
+                    text: 'Ada Cry (Ада Край)',
+                    fontSize: 21,
+                  ),
+                ),
                 const SizedBox(width: 8),
                 const _Badge(text: 'AI'),
                 const Spacer(),
@@ -168,35 +173,19 @@ class _AiTabState extends ConsumerState<AiTab> {
                 _TopicsButton(onTap: () => _showTopics(context)),
               ],
             ),
-            const SizedBox(height: 14),
-            // Row 2: wordmark centered with the disclaimer under it. No
-            // breathing underscore: the blinking glyph read as a stray
-            // underline rather than branding.
-            const Center(
-              child: _MideBrand(
-                fontSize: 26,
-                subtitle: 'AI Can Make Mistakes.',
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Row 3: provider controls. The two pills are ~371dp wide
-            // together, which overflows a 360dp phone (Pixel 4a, Galaxy S8);
-            // scaling the pair down by the few percent needed is invisible,
-            // whereas letting it overflow painted a striped error band.
+            const SizedBox(height: 6),
             Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const _HordeKeyButton(),
-                    const SizedBox(width: 10),
-                    _ProviderBadge(label: s.providerLabel),
-                  ],
+              child: Text(
+                'AI Can Make Mistakes.',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant
+                      .withValues(alpha: 0.5),
                 ),
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             // PC-only shortcut into the built-in code IDE (hidden on mobile/web).
             const IdeEntryPill(),
             const SizedBox(height: 12),

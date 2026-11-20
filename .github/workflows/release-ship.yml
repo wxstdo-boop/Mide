@@ -109,9 +109,9 @@ jobs:
         if: steps.tag.outputs.exists != 'true'
         run: |
           mv build/app/outputs/flutter-apk/app-release.apk \
-             "mide-${{ steps.version.outputs.value }}-arm64-release.apk"
-          sha256sum "mide-${{ steps.version.outputs.value }}-arm64-release.apk" \
-            | tee "mide-${{ steps.version.outputs.value }}-arm64-release.apk.sha256"
+             "MIDE-${{ steps.version.outputs.value }}-arm64-release.apk"
+          sha256sum "MIDE-${{ steps.version.outputs.value }}-arm64-release.apk" \
+            | tee "MIDE-${{ steps.version.outputs.value }}-arm64-release.apk.sha256"
           ls -lh
 
       - name: Create GitHub Release
@@ -125,5 +125,5 @@ jobs:
           generate_release_notes: true
           token: ${{ github.token }}
           files: |
-            mide-${{ steps.version.outputs.value }}-arm64-release.apk
-            mide-${{ steps.version.outputs.value }}-arm64-release.apk.sha256
+            MIDE-${{ steps.version.outputs.value }}-arm64-release.apk
+            MIDE-${{ steps.version.outputs.value }}-arm64-release.apk.sha256

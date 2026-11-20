@@ -8,20 +8,51 @@
 // A fresh [select] applies immediately in memory and serializes storage
 // writes so rapid theme switches persist in order (the last pick always
 // wins — no stale "reset" on the next launch).
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// The two "bloody" themes the user can pick from (carousel in settings).
+/// Theme options in the settings carousel: the two bloody palettes plus a
+/// "follow the system" mode that flips with the OS dark-mode setting.
 enum MideThemeChoice {
-  lightBloody('Кровавая светлая', 'Светлая с кровавым акцентом'),
-  darkBloody('Кровавая тёмная', 'Тёмная с кровавым акцентом');
+  light('Светлая', 'Кровавый акцент на светлом'),
+  dark('Тёмная', 'Кровавый акцент на тёмном'),
+  system('Системная', 'Как в системе');
 
   const MideThemeChoice(this.label, this.subtitle);
 
   final String label;
   final String subtitle;
 
-  bool get isDark => this == MideThemeChoice.darkBloody;
+  ThemeMode get mode => switch (this) {
+    MideThemeChoice.light => ThemeMode.light,
+    MideThemeChoice.dark => ThemeMode.dark,
+    MideThemeChoice.system => ThemeMode.system,
+  };
+
+  /// Brightness to draw in a preview card. [system] has no fixed palette of
+  /// its own, so it previews whatever the OS is currently showing.
+  Brightness previewBrightness(Brightness platform) => switch (this) {
+    MideThemeChoice.light => Brightness.light,
+    MideThemeChoice.dark => Brightness.dark,
+    MideThemeChoice.system => platform,
+  };
+
+  /// Maps a persisted name onto a choice. Names from before the system option
+  /// existed (`lightBloody` / `darkBloody`) still load, so an update does not
+  /// silently reset the user's palette.
+  static MideThemeChoice? fromName(String name) {
+    const legacy = {
+      'lightBloody': MideThemeChoice.light,
+      'darkBloody': MideThemeChoice.dark,
+    };
+    final byLegacy = legacy[name];
+    if (byLegacy != null) return byLegacy;
+    for (final choice in MideThemeChoice.values) {
+      if (choice.name == name) return choice;
+    }
+    return null;
+  }
 }
 
 class ThemeChoiceNotifier extends Notifier<MideThemeChoice> {
@@ -30,7 +61,7 @@ class ThemeChoiceNotifier extends Notifier<MideThemeChoice> {
   );
 
   static const _key = 'mide_theme_choice';
-  static const _default = MideThemeChoice.lightBloody;
+  static const _default = MideThemeChoice.system;
 
   /// Read the persisted theme off the main isolate *before* the first frame.
   ///
@@ -42,9 +73,8 @@ class ThemeChoiceNotifier extends Notifier<MideThemeChoice> {
     try {
       final raw = await _storage.read(key: _key);
       if (raw != null) {
-        for (final choice in MideThemeChoice.values) {
-          if (choice.name == raw) return choice;
-        }
+        final choice = MideThemeChoice.fromName(raw);
+        if (choice != null) return choice;
       }
     } catch (_) {
       // Non-fatal: fall back to the default theme on first paint.

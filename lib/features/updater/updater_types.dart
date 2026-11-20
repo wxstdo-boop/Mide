@@ -145,6 +145,9 @@ UpdateAsset? androidArm64ApkFrom(List<dynamic> rawAssets) {
     final url = (item['browser_download_url'] ?? '').toString();
     final uri = Uri.tryParse(url);
     final lowerName = name.toLowerCase();
+    // Releases up to v1.0.9 shipped as `mide-…`; the asset name is now
+    // `MIDE-…`, and both must stay installable so the updater can still hop
+    // from an older build onto a current one.
     if (!lowerName.startsWith('mide-') ||
         !lowerName.contains('arm64') ||
         !lowerName.endsWith('.apk') ||

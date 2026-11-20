@@ -1,6 +1,7 @@
 // Unit tests for VPN API parsing helpers + UI smoke test.
 import 'dart:convert';
 
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mide/features/vpn/free_vpn_sources.dart';
@@ -166,26 +167,28 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: MideApp()));
     await tester.pump();
     // Let the launch splash play out and lift itself off the tree.
-    await tester.pump(const Duration(milliseconds: 2900));
+    await tester.pump(const Duration(milliseconds: 1800));
     await tester.pumpAndSettle();
 
     // The splash hands off to the shell wordmark "MIDE".
     expect(find.text('MIDE'), findsWidgets);
   });
 
-  testWidgets('bottom pills show all five tabs', (tester) async {
+  testWidgets('bottom pills show the three sections', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: MideApp()));
     await tester.pump();
     // Clear the launch splash.
-    await tester.pump(const Duration(milliseconds: 2900));
+    await tester.pump(const Duration(milliseconds: 1800));
     await tester.pumpAndSettle();
 
-    // All five pills are visible.
+    // Three pills; 3D and Clip are header shortcuts on the VPN tab now.
     expect(find.text('CRY'), findsOneWidget);
     expect(find.text('NPV'), findsOneWidget);
     expect(find.text('Earn'), findsOneWidget);
-    expect(find.text('3D'), findsOneWidget);
-    expect(find.text('Clip'), findsOneWidget);
+    expect(find.text('3D'), findsNothing);
+    expect(find.text('Clip'), findsNothing);
+    expect(find.byIcon(Icons.view_in_ar_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.video_settings_rounded), findsOneWidget);
   });
 
   testWidgets('VPN card offers only ON/OFF plus built-in servers', (
@@ -193,7 +196,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const ProviderScope(child: MideApp()));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 2900));
+    await tester.pump(const Duration(milliseconds: 1800));
     await tester.pumpAndSettle();
 
     // A single toggle, no import flow anywhere.
@@ -211,16 +214,15 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: MideApp()));
     await tester.pump();
     // Clear the launch splash.
-    await tester.pump(const Duration(milliseconds: 2900));
+    await tester.pump(const Duration(milliseconds: 1800));
     await tester.pumpAndSettle();
 
-    // Switching to the AGI tab shows the AI section, branded as MIDE.
+    // The AI section is branded as the persona, not as MIDE.
     await tester.tap(find.text('CRY'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
-    expect(find.text('MIDE'), findsNWidgets(2)); // header shimmer + wordmark
+    expect(find.text('Ada Cry (Ада Край)'), findsOneWidget);
     expect(find.text('AI'), findsOneWidget);
-    expect(find.text('Ада'), findsNothing);
 
     // Switch to MEarn tab.
     await tester.tap(find.text('Earn'));
@@ -228,17 +230,28 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Kryptex'), findsOneWidget);
 
-    // Switch to the 3D companion tab.
-    await tester.tap(find.text('3D'));
+    // 3D and Clip are pushed pages reached from the VPN header.
+    await tester.tap(find.text('NPV'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.byIcon(Icons.view_in_ar_rounded));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Мира'), findsOneWidget);
 
-    // Switch to the Clip Studio tab.
-    await tester.tap(find.text('Clip'));
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.byIcon(Icons.video_settings_rounded));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Clip Studio'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Back to NPV tab: header is visible.
     await tester.tap(find.text('NPV'));

@@ -1,29 +1,32 @@
 part of '../main.dart';
 
-/// Smooth one-shot entrance: content fades in and glides up slightly on first
-/// appearance (app launch). Re-running on rebuilds is avoided by keeping the
-/// animation state inside the widget.
-class _Entrance extends StatelessWidget {
-  const _Entrance({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 620),
-      curve: Curves.easeOutCubic,
-      child: child,
-      builder: (context, t, child) => Opacity(
-        opacity: t,
-        child: Transform.translate(
-          offset: Offset(0, 22 * (1 - t)),
-          child: child,
-        ),
-      ),
-    );
-  }
+/// Push a full-screen page with the signature slide + fade transition
+/// (reversed automatically on pop).
+void pushMidePage(BuildContext context, Widget page) {
+  Navigator.of(context).push(
+    PageRouteBuilder<void>(
+      transitionDuration: const Duration(milliseconds: 340),
+      reverseTransitionDuration: const Duration(milliseconds: 260),
+      pageBuilder: (_, __, ___) => page,
+      transitionsBuilder: (_, animation, __, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.06),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    ),
+  );
 }
 
 class _AppHeader extends StatelessWidget {
@@ -32,7 +35,11 @@ class _AppHeader extends StatelessWidget {
     required this.title,
     this.version,
     this.actions = const [],
+    this.leading,
   });
+
+  /// Optional widget placed before the icon (a back arrow on pushed pages).
+  final Widget? leading;
 
   /// Real app icon asset (e.g. the Mide launcher icon).
   final String image;
@@ -45,6 +52,7 @@ class _AppHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
+        if (leading != null) leading!,
         SizedBox(
           width: 46,
           height: 46,
@@ -125,22 +133,20 @@ class _TabPillBar extends ConsumerStatefulWidget {
 
 class _TabPillBarState extends ConsumerState<_TabPillBar>
     with SingleTickerProviderStateMixin {
-  /// Tab value for the sliding pill: 0 = CRY, 1 = NPV, 2 = MEarn, 3 = 3D,
-  /// 4 = Clip. The controller range extends to the last index (4.0) so the
-  /// selection bubble can travel across every pill. Kept in sync with
-  /// [_tabs] below.
+  /// Tab value for the sliding pill: 0 = CRY, 1 = NPV, 2 = MEarn. The
+  /// controller range extends to the last index (2.0) so the selection bubble
+  /// can travel across every pill. Kept in sync with [_tabs] below.
   late final AnimationController _anim = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 620),
-    upperBound: 4.0,
+    duration: const Duration(milliseconds: 320),
+    upperBound: 2.0,
   );
 
+  /// Three destinations only: 3D and Clip live in the VPN header now.
   static const _tabs = <_TabSpec>[
     _TabSpec(icon: Icons.auto_awesome_rounded, label: 'CRY'),
     _TabSpec(icon: Icons.shield_rounded, label: 'NPV'),
     _TabSpec(icon: Icons.payments_rounded, label: 'Earn'),
-    _TabSpec(icon: Icons.view_in_ar_rounded, label: '3D'),
-    _TabSpec(icon: Icons.video_settings_rounded, label: 'Clip'),
   ];
 
   @override
@@ -168,7 +174,7 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
     final scheme = Theme.of(context).colorScheme;
     ref.watch(appTabProvider);
     ref.listen<int>(appTabProvider, (prev, next) {
-      _anim.animateTo(next.toDouble(), curve: Curves.easeOutQuint);
+      _anim.animateTo(next.toDouble(), curve: Curves.easeOutCubic);
     });
     return SafeArea(
       top: false,
@@ -227,13 +233,6 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
                             decoration: BoxDecoration(
                               color: scheme.primary,
                               borderRadius: BorderRadius.circular(999),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: scheme.primary.withValues(alpha: 0.35),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
                             ),
                           ),
                         ),
@@ -272,6 +271,20 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
   }
 }
 
+/// Back affordance for sections that are pushed instead of tabbed.
+class _BackArrow extends StatelessWidget {
+  const _BackArrow();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: 'Назад',
+      onPressed: () => Navigator.maybePop(context),
+      icon: const Icon(Icons.arrow_back_rounded),
+    );
+  }
+}
+
 /// One bottom-bar destination: icon + short label.
 class _TabSpec {
   const _TabSpec({required this.icon, required this.label});
@@ -297,9 +310,10 @@ class _TabPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // Bloody, semi-transparent press feedback: the ripple is crimson instead
-    // of the default grey, and the pill itself tints on hold so a tap reads
-    // instantly even before the bubble finishes sliding.
+    // Bloody, semi-transparent press feedback: the pill tints crimson on
+    // hold so a tap reads instantly even before the bubble finishes sliding.
+    // The ripple is disabled — a crimson splash re-clipped the rounded rect
+    // on every frame and was a visible source of jank while sliding.
     final blood = scheme.primary;
     return Semantics(
       button: true,
@@ -309,7 +323,8 @@ class _TabPill extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(999),
-          splashColor: blood.withValues(alpha: 0.28),
+          splashFactory: NoSplash.splashFactory,
+          splashColor: Colors.transparent,
           highlightColor: blood.withValues(alpha: 0.16),
           hoverColor: blood.withValues(alpha: 0.10),
           child: SizedBox(

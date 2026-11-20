@@ -89,15 +89,27 @@ Future<FakeAiSession> pumpAiTab(
 
 void main() {
   group('header branding', () {
-    testWidgets('shows the MIDE wordmark, the AI badge and the disclaimer', (
+    testWidgets('shows the persona name, the AI badge and the disclaimer', (
       tester,
     ) async {
       await pumpAiTab(tester);
 
-      // Shimmer title + wordmark.
-      expect(find.text('MIDE'), findsNWidgets(2));
+      expect(find.text('Ada Cry (Ада Край)'), findsOneWidget);
       expect(find.text('AI'), findsOneWidget);
       expect(find.text('AI Can Make Mistakes.'), findsOneWidget);
+      // The MIDE wordmark is gone from this screen entirely.
+      expect(find.text('MIDE'), findsNothing);
+    });
+
+    testWidgets('no provider pills in the header any more', (tester) async {
+      await pumpAiTab(
+        tester,
+        initial: const AiSessionState(providerLabel: 'Horde'),
+      );
+
+      expect(find.text('Horde'), findsNothing);
+      expect(find.textContaining('Pollinations'), findsNothing);
+      expect(find.byIcon(Icons.key_rounded), findsNothing);
     });
 
     testWidgets('never shows the retired persona name', (tester) async {
@@ -106,15 +118,6 @@ void main() {
       expect(find.text('Ада'), findsNothing);
       expect(find.text('АДУСЯ'), findsNothing);
       expect(find.textContaining('Ады'), findsNothing);
-    });
-
-    testWidgets('provider badge reflects the active provider', (tester) async {
-      await pumpAiTab(
-        tester,
-        initial: const AiSessionState(providerLabel: 'Horde'),
-      );
-
-      expect(find.text('Horde'), findsWidgets);
     });
   });
 

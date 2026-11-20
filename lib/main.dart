@@ -79,9 +79,12 @@ class MideApp extends ConsumerWidget {
       scrollBehavior: _BouncyScrollBehavior(),
       theme: buildBloodyTheme(Brightness.light),
       darkTheme: buildBloodyTheme(Brightness.dark),
-      themeMode: choice.isDark ? ThemeMode.dark : ThemeMode.light,
-      themeAnimationDuration: const Duration(milliseconds: 500),
-      themeAnimationCurve: Curves.easeInOutCubic,
+      themeMode: choice.mode,
+      // Short enough to feel like a response, long enough to read as a fade.
+      // 500ms lagged visibly behind the settings carousel, which is what made
+      // switching themes look like a mess.
+      themeAnimationDuration: const Duration(milliseconds: 280),
+      themeAnimationCurve: Curves.easeOut,
       home: const _SplashShell(child: HomePage()),
     );
   }
@@ -110,7 +113,9 @@ class _SplashShellState extends State<_SplashShell>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 2800),
+    // 1.6s total: 1.0s hold, 0.6s lift. The old 2.8s read as a stall, and
+    // the long tail made the hand-off feel like a freeze rather than a fade.
+    duration: const Duration(milliseconds: 1600),
   )..forward();
 
   bool _gone = false;
@@ -138,13 +143,13 @@ class _SplashShellState extends State<_SplashShell>
     final scheme = Theme.of(context).colorScheme;
     // Hold the splash fully visible for the first ~60%, then ease it out.
     final exit = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 55),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 45),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 62),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 38),
     ]).animate(CurvedAnimation(parent: _c, curve: Curves.easeInOutCubic));
     // Emblem-only scale: settles at 0.92, then drifts up as the splash lifts.
     final scale = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.92, end: 0.92), weight: 55),
-      TweenSequenceItem(tween: Tween(begin: 0.92, end: 1.06), weight: 45),
+      TweenSequenceItem(tween: Tween(begin: 0.92, end: 0.92), weight: 62),
+      TweenSequenceItem(tween: Tween(begin: 0.92, end: 1.04), weight: 38),
     ]).animate(CurvedAnimation(parent: _c, curve: Curves.easeInOutCubic));
 
     // Full-bleed backdrop: opaque `surface` under a crimson-tinted gradient
@@ -381,51 +386,30 @@ class _HomePageState extends ConsumerState<HomePage> {
             stops: const [0.0, 0.42],
           ),
         ),
-        child: _Entrance(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 420),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            // Let the exiting panel finish animating before the entering one
-            // takes over, so fast taps stack instead of snapping.
-            layoutBuilder: (currentChild, previousChildren) {
-              return Stack(
-                fit: StackFit.passthrough,
-                alignment: Alignment.topLeft,
-                clipBehavior: Clip.none,
-                children: [
-                  ...previousChildren,
-                  if (currentChild != null) currentChild,
-                ],
-              );
-            },
-            transitionBuilder: (child, animation) {
-              final curved = CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-                reverseCurve: Curves.easeInCubic,
-              );
-              // Consistent gentle lift + fade + settle — no horizontal flip.
-              return FadeTransition(
-                opacity: curved,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0.0, 0.03),
-                    end: Offset.zero,
-                  ).animate(curved),
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.985, end: 1).animate(curved),
-                    child: child,
-                  ),
-                ),
-              );
-            },
+        // A short cross-fade only: the previous panel used to fade *and*
+        // slide *and* scale for 420ms, which repainted the whole screen three
+        // times over and read as lag on a mid-range phone. Each panel is its
+        // own repaint boundary so the fade cannot dirty the gradient behind.
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          transitionBuilder: (child, animation) =>
+              FadeTransition(opacity: animation, child: child),
+          layoutBuilder: (currentChild, previousChildren) => Stack(
+            fit: StackFit.passthrough,
+            alignment: Alignment.topLeft,
+            children: [
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
+          ),
+          child: RepaintBoundary(
+            key: ValueKey(tab),
             child: switch (tab) {
-              0 => const AiTab(key: ValueKey('agi')),
-              1 => const VpnTab(key: ValueKey('vpn')),
-              2 => const MEarnTab(key: ValueKey('mearn')),
-              3 => const CompanionTab(key: ValueKey('companion')),
-              _ => const ClipStudioTab(key: ValueKey('clip')),
+              0 => const AiTab(),
+              1 => const VpnTab(),
+              _ => const MEarnTab(),
             },
           ),
         ),

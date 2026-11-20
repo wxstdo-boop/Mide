@@ -37,6 +37,30 @@ void main() {
       expect(asset?.sizeBytes, 1024);
     });
 
+    test('accepts the CAPS asset name newer releases ship', () {
+      final asset = androidArm64ApkFrom([
+        {
+          'name': 'MIDE-1.0.10-arm64-release.apk',
+          'browser_download_url': 'https://github.com/wxstdo-boop/Mide/releases/download/v1.0.10/MIDE-1.0.10-arm64-release.apk',
+          'size': 2048,
+        },
+      ]);
+
+      expect(asset?.name, 'MIDE-1.0.10-arm64-release.apk');
+      expect(asset?.sizeBytes, 2048);
+    });
+
+    test('still accepts the lowercase name older releases used', () {
+      final asset = androidArm64ApkFrom([
+        {
+          'name': 'mide-1.0.9-arm64-release.apk',
+          'browser_download_url': 'https://github.com/wxstdo-boop/Mide/releases/download/v1.0.9/mide-1.0.9-arm64-release.apk',
+        },
+      ]);
+
+      expect(asset?.name, 'mide-1.0.9-arm64-release.apk');
+    });
+
     test('does not fall back to an incompatible asset', () {
       expect(
         androidArm64ApkFrom([
