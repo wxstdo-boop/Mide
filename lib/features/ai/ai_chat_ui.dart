@@ -136,7 +136,7 @@ class _AiTabState extends ConsumerState<AiTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 14),
-            // Row 1: icon + АДУСЯ + M.AI ... "⋮" topic button (clear, alone).
+            // Row 1: icon + MIDE + AI ... "⋮" topic button (clear, alone).
             Row(
               children: [
                 SizedBox(
@@ -605,7 +605,7 @@ class _AdaBrand extends StatelessWidget {
 }
 
 // ── Animated chat bubble ───────────────────────────────────────────────────
-// Own messages fade + scale in smoothly. Ada's reply: while waiting a bare
+// Own messages fade + scale in smoothly. The assistant's reply: while waiting a bare
 // red blinking underscore shows; when the answer lands it cross-fades into
 // the finished bubble.
 
@@ -722,7 +722,7 @@ class _BubbleBody extends StatelessWidget {
   }
 }
 
-/// Ada's "thinking" indicator — a bare red blinking underscore (no bubble),
+/// The assistant's "thinking" indicator — a bare red blinking underscore (no bubble),
 /// shown while the answer is in flight.
 class _ThinkingCaret extends StatefulWidget {
   const _ThinkingCaret({super.key});
@@ -984,7 +984,7 @@ class _ComposerState extends State<_Composer>
               child: TextField(
                 controller: widget.controller,
                 focusNode: _focusNode,
-                // The field stays enabled even while Ada is busy so the
+                // The field stays enabled even while the assistant is busy so the
                 // keyboard and focus are kept alive after sending.
                 autofocus: false,
                 textInputAction: TextInputAction.send,

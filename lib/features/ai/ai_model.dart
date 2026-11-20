@@ -1,4 +1,4 @@
-// Chat model for the Ada (M.AI) section.
+// Chat model for the MIDE AI section.
 enum AiRole { user, assistant }
 
 class AiMessage {

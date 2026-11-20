@@ -5,7 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'ide_screen.dart';
 import 'is_desktop.dart';
 
-/// The "IDE" pill embedded into the AI (Ada) section — a beautiful gradient
+/// The "IDE" pill embedded into the AI section — a beautiful gradient
 /// card that opens the built-in code IDE. Visible **only on PC**; Android/
 /// iOS builds of this file still render an empty box.
 class IdeEntryPill extends StatelessWidget {

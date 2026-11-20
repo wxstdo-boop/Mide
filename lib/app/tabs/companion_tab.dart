@@ -10,7 +10,7 @@ part of '../../main.dart';
 // persona session, so the companion has her own persisted conversation.
 // ---------------------------------------------------------------------------
 
-/// Persona + storage key for the companion's chat (kept apart from Ada's).
+/// Persona + storage key for the companion's chat (kept apart from the AI tab's).
 const PersonaArg kCompanionPersona = PersonaArg(
   systemPrompt:
       'Ты — Мира, дружелюбная 3D-компаньонка внутри приложения Mide. '

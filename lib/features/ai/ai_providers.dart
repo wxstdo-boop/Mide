@@ -50,7 +50,7 @@ class AiSessionState {
 }
 
 class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
-  /// Default Ada persona used by the AGI tab.
+  /// Default persona used by the AI tab.
   static const String adaSystemPrompt =
       'Ты — MIDE, встроенный ассистент. Отвечай максимально коротко (1–3 предложения), по делу, на языке пользователя.';
 
@@ -359,7 +359,7 @@ final personaSessionProvider =
       AiSessionNotifier.new,
     );
 
-/// The Ada (AGI) session — a concrete instance of [personaSessionProvider].
+/// The MIDE AI session — a concrete instance of [personaSessionProvider].
 final aiSessionProvider = personaSessionProvider(
   const PersonaArg(
     systemPrompt: AiSessionNotifier.adaSystemPrompt,
