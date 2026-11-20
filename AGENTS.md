@@ -114,3 +114,33 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
   with a `NoSuchMethodError` in `JavaDocParser` on JDK 17, and that lint only
   runs for release builds (`lintVitalAnalyzeRelease`), so the debug APK CI job
   will not catch it — keep the JDK pin at 21.
+
+## Mide — hard-won constraints (read before changing these areas)
+
+- The release APK is signed with the **v2 scheme only** (no `META-INF/*.RSA`),
+  and `minSdk` is 24. Reading a downloaded APK's signer via `GET_SIGNATURES`
+  is unreliable before API 28, so the updater's signature check is
+  **advisory**: it reports a readable mismatch, and must never block on an
+  unreadable one. Integrity rests on the release `digest` SHA-256 (verified
+  before install) plus Android's own same-key install rule.
+- GitHub exposes each asset's hash as `digest: "sha256:<hex>"`; the updater
+  parses that rather than the sibling `.sha256` file.
+- AI providers must answer **without a user key** — that is the product
+  promise. Verified anonymous (2026-11): Pollinations
+  (`text.pollinations.ai/openai`, needs a browser User-Agent), AI Horde
+  (`oai.aihorde.net/v1` with the documented key `0000000000`), Kilo
+  (`api.kilo.ai/api/gateway`, no auth header at all). Model ids rot: Kilo
+  retired `minimax/minimax-m2.1:free` and `z-ai/glm-5:free` (404), so probe
+  `/api/gateway/models` before trusting any id. `test/features/ide/
+  ide_providers_test.dart` guards the no-key contract.
+- The `agent/` sidecar executes shell commands, so it binds `127.0.0.1` by
+  default (`AGENT_HOST` overrides) and only echoes CORS for loopback origins.
+  Never widen either without a reason.
+- Pills size themselves from the available width; the container's 4dp padding
+  **and** 1dp border must both be subtracted, and the width must not be
+  floored above what fits. `test/app/shell_widget_test.dart` lays the shell
+  out at 280dp and fails on any `RenderFlex` overflow — that test is what
+  catches header/pill regressions.
+- No JDK/Android SDK in the agent sandbox, so Kotlin/Gradle changes are
+  compile-unverified here; keep `android/` edits conservative and let CI or
+  a local build confirm them.
