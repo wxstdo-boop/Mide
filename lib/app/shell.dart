@@ -57,32 +57,50 @@ class _AppHeader extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: scheme.onSurface,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.3,
+                  // The product name is the header's anchor: set big, heavy
+                  // and wide-tracked like the splash wordmark. Flexible keeps
+                  // it from fighting the version chip on narrow screens.
+                  Flexible(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: scheme.onSurface,
+                        fontSize: 30,
+                        height: 1.0,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.6,
+                      ),
                     ),
                   ),
                   if (version != null) ...[
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: scheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        version!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: scheme.onSecondaryContainer,
+                    // The chip must give way to the wordmark: it shrinks a
+                    // few percent on narrow phones instead of pushing the row
+                    // past the edge or truncating "1.0.6" into "1.0…".
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: scheme.secondaryContainer,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            version!,
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSecondaryContainer,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -158,9 +176,17 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Fit all pills into the available width; drop the text label on
-          // narrow screens (icon-only) so nothing overflows.
-          final inner = constraints.maxWidth - 8 - _gap * (_tabs.length - 1);
-          final pillWidth = (inner / _tabs.length).clamp(50.0, 92.0);
+          // narrow screens (icon-only) so nothing overflows. The reserved
+          // 10dp is the container's 4dp padding on both sides plus its 1dp
+          // border on both sides — leaving either out overflowed a 320dp
+          // phone by exactly the missing pixels. The width is never floored
+          // above what fits, or the floor itself would reintroduce the
+          // overflow on very narrow screens.
+          const chrome = 8.0 + 2.0;
+          final available =
+              (constraints.maxWidth - chrome - _gap * (_tabs.length - 1)) /
+              _tabs.length;
+          final pillWidth = available.clamp(0.0, 92.0);
           final showLabel = pillWidth >= 76;
           final unit = pillWidth + _gap;
           return Row(

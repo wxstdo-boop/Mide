@@ -51,6 +51,50 @@ void main() {
     });
   });
 
+  group('header branding', () {
+    testWidgets('MIDE is large, heavy and free of a yellow underline', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+
+      // _AppHeader is private to the main.dart library, so pick the wordmark
+      // out by its typography instead of by widget type.
+      final titles = tester
+          .widgetList<Text>(find.text('MIDE'))
+          .where((t) => (t.style?.fontSize ?? 0) >= 28)
+          .toList();
+      expect(titles, isNotEmpty, reason: 'header MIDE should be huge');
+
+      final title = titles.first;
+      expect(title.style!.fontWeight, FontWeight.w900);
+      // No decoration at all: the old header drew a yellow bar under the
+      // name, which is what the "no yellow underline" report was about.
+      expect(title.style!.decoration, isNull);
+      expect(title.style!.decorationColor, isNull);
+
+      // And the retired persona names are gone from the header.
+      expect(find.text('Ада'), findsNothing);
+      expect(find.text('АДУСЯ'), findsNothing);
+      expect(find.text('M.AI'), findsNothing);
+    });
+  });
+
+  group('narrow screen', () {
+    testWidgets('huge MIDE title never overflows a narrow phone', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(280, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await pumpApp(tester);
+
+      // A RenderFlex overflow would have been thrown during layout.
+      expect(tester.takeException(), isNull);
+      expect(find.text('MIDE'), findsWidgets);
+    });
+  });
+
   group('pill navigation', () {
     testWidgets('selects a pill on tap', (tester) async {
       await pumpApp(tester);

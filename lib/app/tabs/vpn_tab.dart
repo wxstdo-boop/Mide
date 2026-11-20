@@ -648,13 +648,22 @@ class _VpnToggleCard extends ConsumerWidget {
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      btnLabel,
-                      style: TextStyle(
-                        color: isConnected ? scheme.onError : scheme.onPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.3,
+                    // Flexible + ellipsis: on a very narrow phone the label
+                    // is wider than the button, and an unconstrained Text
+                    // overflows the pill instead of truncating.
+                    Flexible(
+                      child: Text(
+                        btnLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isConnected
+                              ? scheme.onError
+                              : scheme.onPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                        ),
                       ),
                     ),
                   ],
