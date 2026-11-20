@@ -166,6 +166,8 @@ class _ThinkingCaretState extends State<_ThinkingCaret>
 // ── Error card ─────────────────────────────────────────────────────────────
 
 class _AnimatedErrorCard extends StatefulWidget {
+  /// The failure phrase. Rendered as-is; today every call site passes
+  /// [aiBusyPhrase], which is already split into a title and a subtitle.
   final String text;
   final VoidCallback? onRetry;
 
@@ -226,20 +228,14 @@ class _AnimatedErrorCardState extends State<_AnimatedErrorCard>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // One phrase, wrapped rather than hardcoded, so a
+                    // different message from the session cannot be dropped.
                     Text(
-                      'Ассистент занят',
+                      widget.text,
                       style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                         color: scheme.onErrorContainer,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Попробуй позже!',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: scheme.onErrorContainer.withValues(alpha: 0.85),
                         height: 1.3,
                       ),
                     ),

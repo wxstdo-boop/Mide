@@ -223,8 +223,7 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('Ассистент занят'), findsOneWidget);
-      expect(find.text('Попробуй позже!'), findsOneWidget);
+      expect(find.text(aiBusyPhrase), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.refresh_rounded));
       await tester.pump();

@@ -51,10 +51,10 @@ class AiSessionState {
 
 class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
   /// Default persona used by the AI tab.
-  static const String adaSystemPrompt =
+  static const String defaultSystemPrompt =
       'Ты — MIDE, встроенный ассистент. Отвечай максимально коротко (1–3 предложения), по делу, на языке пользователя.';
 
-  static const String adaChatKey = 'mide_ai_chat_v1';
+  static const String defaultChatKey = 'mide_ai_chat_v1';
 
   /// Persona + tone instruction sent as the system message.
   late String systemPrompt;
@@ -362,8 +362,8 @@ final personaSessionProvider =
 /// The MIDE AI session — a concrete instance of [personaSessionProvider].
 final aiSessionProvider = personaSessionProvider(
   const PersonaArg(
-    systemPrompt: AiSessionNotifier.adaSystemPrompt,
-    chatKey: AiSessionNotifier.adaChatKey,
+    systemPrompt: AiSessionNotifier.defaultSystemPrompt,
+    chatKey: AiSessionNotifier.defaultChatKey,
   ),
 );
 

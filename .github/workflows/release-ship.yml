@@ -3,7 +3,7 @@ name: Release Ship
 # Auto-release pipeline: every push to main builds the release APK and
 # publishes it as a GitHub Release. The version comes from pubspec.yaml
 # (1.0.1+2 -> v1.0.1), so bumping the version + pushing ships a new build.
-# The in-app "Проверить обновления" button picks the latest release up.
+# The app checks GitHub for the latest release on its own (no button).
 on:
   push:
     branches: [main]
