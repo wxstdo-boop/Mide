@@ -144,3 +144,18 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
 - No JDK/Android SDK in the agent sandbox, so Kotlin/Gradle changes are
   compile-unverified here; keep `android/` edits conservative and let CI or
   a local build confirm them.
+
+## Mide — auto-update flow
+
+- Settings performs the update check itself (`initState` → `_check()`); there is
+  deliberately **no "check for updates" button**, because opening the screen
+  already expresses that intent. If you add UI here, do not reintroduce a
+  manual trigger without a reason.
+- Everything goes through `UpdateService` (`lib/features/updater/
+  update_service.dart`) and the `updateServiceProvider` override, so widget
+  tests drive the whole flow with a fake and never touch the network or a
+  platform channel. New platform behaviour belongs behind that interface.
+- `test/features/updater/github_updater_test.dart` exercises the real updater
+  over a fake `HttpClientAdapter` (only the wire is stubbed) and fakes
+  `PathProviderPlatform` for the download dir. Use that pair as the pattern for
+  any new download/file logic.
