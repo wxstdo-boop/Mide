@@ -125,7 +125,7 @@ class _TabPillBar extends ConsumerStatefulWidget {
 
 class _TabPillBarState extends ConsumerState<_TabPillBar>
     with SingleTickerProviderStateMixin {
-  /// Tab value for the sliding pill: 0 = AGI, 1 = NPV, 2 = MEarn, 3 = 3D,
+  /// Tab value for the sliding pill: 0 = CRY, 1 = NPV, 2 = MEarn, 3 = 3D,
   /// 4 = Clip. The controller range extends to the last index (4.0) so the
   /// selection bubble can travel across every pill. Kept in sync with
   /// [_tabs] below.
@@ -136,7 +136,7 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
   );
 
   static const _tabs = <_TabSpec>[
-    _TabSpec(icon: Icons.auto_awesome_rounded, label: 'AGI'),
+    _TabSpec(icon: Icons.auto_awesome_rounded, label: 'CRY'),
     _TabSpec(icon: Icons.shield_rounded, label: 'NPV'),
     _TabSpec(icon: Icons.payments_rounded, label: 'Earn'),
     _TabSpec(icon: Icons.view_in_ar_rounded, label: '3D'),

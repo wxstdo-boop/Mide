@@ -1,4 +1,4 @@
-// Active tab (0 = AGI, 1 = NPV, 2 = MEarn, 3 = 3D, 4 = Studio) — persisted so
+// Active tab (0 = CRY, 1 = NPV, 2 = MEarn, 3 = 3D, 4 = Studio) — persisted so
 // the app reopens where you left off. The persisted value is resolved
 // synchronously up-front (see [AppTabNotifier.loadPersisted]) and handed to
 // the notifier as a seed, so the very first frame already shows the

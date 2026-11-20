@@ -196,7 +196,7 @@ void main() {
     testWidgets('rapid taps settle on the last pill', (tester) async {
       await pumpApp(tester);
 
-      for (final label in ['AGI', 'Earn', '3D', 'Clip']) {
+      for (final label in ['CRY', 'Earn', '3D', 'Clip']) {
         await tester.tap(find.text(label));
         await tester.pump(const Duration(milliseconds: 90));
       }

@@ -181,7 +181,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // All five pills are visible.
-    expect(find.text('AGI'), findsOneWidget);
+    expect(find.text('CRY'), findsOneWidget);
     expect(find.text('NPV'), findsOneWidget);
     expect(find.text('Earn'), findsOneWidget);
     expect(find.text('3D'), findsOneWidget);
@@ -215,7 +215,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Switching to the AGI tab shows the AI section, branded as MIDE.
-    await tester.tap(find.text('AGI'));
+    await tester.tap(find.text('CRY'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
     expect(find.text('MIDE'), findsNWidgets(2)); // header shimmer + wordmark

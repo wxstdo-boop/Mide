@@ -344,7 +344,7 @@ class _SplashEmblem extends StatelessWidget {
   }
 }
 
-/// Shell with the bottom pill navigation: AGI (AI), NPV (VPN), MEarn (crypto).
+/// Shell with the bottom pill navigation: CRY (AI), NPV (VPN), MEarn (crypto).
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
@@ -362,7 +362,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     // Direction-independent, fast-tap-safe transition: content always
     // fades, lifts up slightly and settles from a tiny scale. Because the
     // motion no longer flips between left/right based on which way you
-    // swiped, rapid AGI↔NPV↔MEarn tapping can no longer make the panels
+    // swiped, rapid CRY↔NPV↔MEarn tapping can no longer make the panels
     // slide "there and back again" — they just cross-fade in place.
     return Scaffold(
       backgroundColor: scheme.surface,

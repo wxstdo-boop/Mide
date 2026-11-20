@@ -1,7 +1,5 @@
 part of '../../main.dart';
 
-/// AGI tab — remote AI assistant. Placeholder for now, will be fleshed out later.
-
 /// NPV tab — the VPN client.
 class VpnTab extends ConsumerWidget {
   const VpnTab({super.key});
