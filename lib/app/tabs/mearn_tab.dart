@@ -69,15 +69,17 @@ class MEarnTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Quick stats row.
-            Row(
+            // Wrap, not Row: the two labels overflowed by 82px on narrow
+            // screens (and at larger text scales), clipping the second chip.
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 _StatChip(
                   icon: Icons.trending_up_rounded,
                   label: '5 сервисов',
                   color: scheme.primary,
                 ),
-                const SizedBox(width: 8),
                 _StatChip(
                   icon: Icons.circle,
                   label: 'Пассивный доход',
