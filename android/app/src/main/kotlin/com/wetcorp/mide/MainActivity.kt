@@ -1,4 +1,4 @@
-package com.example.mide
+package com.wetcorp.mide
 
 import android.content.Intent
 import android.content.pm.PackageManager

@@ -36,7 +36,7 @@ class WireguardEngine {
   Future<void> connect({
     required String serverAddress,
     required String wgQuickConfig,
-    String providerId = 'com.example.mide',
+    String providerId = 'com.wetcorp.mide',
   }) async {
     await init();
     if (_wg == null) {
