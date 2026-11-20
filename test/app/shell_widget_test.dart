@@ -63,16 +63,16 @@ void main() {
           .value;
 
       // Hold phase: the splash must be fully opaque, not half-transparent.
-      // Hold runs to ~62% of the timeline, and the easeInOutCubic curve
-      // shifts the sample earlier still; 700ms is safely inside it.
-      await tester.pump(const Duration(milliseconds: 700));
+      // The backdrop holds to 72% of the 1700ms timeline (1224ms), so 900ms is
+      // safely inside it.
+      await tester.pump(const Duration(milliseconds: 900));
       expect(overlayOpacity(), closeTo(1.0, 0.001));
 
       final samples = <double>[];
-      // Sample inside the exit window (990ms → 1600ms); overshooting it would
+      // Sample inside the exit window (1224ms → 1700ms); overshooting it would
       // find the overlay already removed from the tree.
-      for (var i = 0; i < 6; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 70));
         samples.add(overlayOpacity());
       }
 
@@ -136,6 +136,58 @@ void main() {
       expect(find.text('Ада'), findsNothing);
       expect(find.text('АДУСЯ'), findsNothing);
       expect(find.text('M.AI'), findsNothing);
+    });
+
+    testWidgets('the wordmark is terminated by a crimson dot', (tester) async {
+      await pumpApp(tester);
+
+      // The dot is a plain Container drawn next to the header wordmark, so find
+      // it by the shape it is given rather than by a (private) widget type.
+      final dots = tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) {
+            final d = c.decoration;
+            return d is BoxDecoration && d.shape == BoxShape.circle;
+          })
+          .where((c) => c.constraints?.maxWidth != null)
+          .toList();
+      expect(dots, isNotEmpty, reason: 'header should end with a brand dot');
+
+      final dot = dots.firstWhere((c) {
+        final d = c.decoration! as BoxDecoration;
+        return d.color != null && d.boxShadow != null;
+      });
+      final decoration = dot.decoration! as BoxDecoration;
+      expect(decoration.shape, BoxShape.circle);
+      // Brand red, not the neutral onSurface ink of the wordmark itself.
+      expect(decoration.color, isNotNull);
+      expect(
+        decoration.color!.r,
+        greaterThan(decoration.color!.b),
+        reason: 'the dot must be red-dominant, got ${decoration.color}',
+      );
+    });
+
+    testWidgets('only the product name gets the brand dot', (tester) async {
+      int brandDots() => tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) {
+            final d = c.decoration;
+            return d is BoxDecoration &&
+                d.shape == BoxShape.circle &&
+                d.boxShadow != null;
+          })
+          .length;
+
+      await pumpApp(tester);
+      expect(brandDots(), 1, reason: 'the NPV header shows "MIDE."');
+
+      // "MEarn" is a section title, not the product name.
+      await tester.tap(find.text('Earn'));
+      // Let the tab switcher finish: until it does, the outgoing NPV header is
+      // still mounted and would be counted.
+      await tester.pumpAndSettle();
+      expect(brandDots(), 0, reason: 'section headers carry no brand dot');
     });
   });
 

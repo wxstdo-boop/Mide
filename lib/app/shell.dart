@@ -69,17 +69,28 @@ class _AppHeader extends StatelessWidget {
                   // and wide-tracked like the splash wordmark. Flexible keeps
                   // it from fighting the version chip on narrow screens.
                   Flexible(
-                    child: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: scheme.onSurface,
-                        fontSize: 30,
-                        height: 1.0,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.6,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: scheme.onSurface,
+                              fontSize: 30,
+                              height: 1.0,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.6,
+                            ),
+                          ),
+                        ),
+                        // The brand mark terminates the product name only —
+                        // section headers like "MEarn" or "Мира" keep none.
+                        if (title == 'MIDE') const _WordmarkDot(size: 30),
+                      ],
                     ),
                   ),
                   if (version != null) ...[
