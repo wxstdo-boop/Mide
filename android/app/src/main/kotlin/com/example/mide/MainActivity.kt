@@ -58,20 +58,22 @@ class MainActivity : FlutterActivity() {
                 return@setMethodCallHandler
             }
 
-            // Fail closed: an APK we cannot parse is exactly the case the
-            // check exists for (truncated download, repacked file), so it must
-            // not fall through to the installer.
+            // Signature check is UX, not the security boundary: the release
+            // APK is signed with the v2 scheme only, and reading an archive's
+            // signer through GET_SIGNATURES is unreliable before API 28. So an
+            // unreadable signer must NOT block the install, or updates would
+            // break on the Android 7/8 devices that minSdk 24 still supports.
+            // Integrity is already covered twice: the SHA-256 from the release
+            // digest is verified before we get here, and Android itself
+            // refuses to install an APK signed with a different key. A
+            // *readable* mismatch is worth reporting early, because it turns
+            // "App not installed" into a sentence the user can act on.
             val apkSigner = apkSignerHex(apk)
-            if (apkSigner == null) {
-                result.error(
-                    "signature_unreadable",
-                    "Не удалось прочитать подпись APK — установка отменена",
-                    null
-                )
-                return@setMethodCallHandler
-            }
             val expectedSigner = ownSigner
-            if (expectedSigner != null && apkSigner != expectedSigner) {
+            if (apkSigner != null &&
+                expectedSigner != null &&
+                apkSigner != expectedSigner
+            ) {
                 result.error(
                     "signature_mismatch",
                     "APK подписан другим ключом — установка отменена",
