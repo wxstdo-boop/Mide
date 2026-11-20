@@ -175,14 +175,18 @@ class _SplashShellState extends State<_SplashShell>
     // explicit constant, so its phases land on the fractions named above.
     final emblemOpacity = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 26,
       ),
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 30),
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.0)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
+        tween: Tween(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeInCubic)),
         weight: 16,
       ),
       TweenSequenceItem(tween: ConstantTween(0.0), weight: 28),
@@ -194,14 +198,18 @@ class _SplashShellState extends State<_SplashShell>
     // pixel-exact.
     final scale = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0.94, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween(
+          begin: 0.94,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 26,
       ),
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 30),
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.03)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
+        tween: Tween(
+          begin: 1.0,
+          end: 1.03,
+        ).chain(CurveTween(curve: Curves.easeInCubic)),
         weight: 16,
       ),
       TweenSequenceItem(tween: ConstantTween(1.03), weight: 28),
@@ -213,8 +221,10 @@ class _SplashShellState extends State<_SplashShell>
       TweenSequenceItem(tween: ConstantTween(0.0), weight: 26),
       TweenSequenceItem(tween: ConstantTween(0.0), weight: 30),
       TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: -14.0)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
+        tween: Tween(
+          begin: 0.0,
+          end: -14.0,
+        ).chain(CurveTween(curve: Curves.easeInCubic)),
         weight: 16,
       ),
       TweenSequenceItem(tween: ConstantTween(-14.0), weight: 28),
@@ -226,8 +236,10 @@ class _SplashShellState extends State<_SplashShell>
     final exit = TweenSequence<double>([
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 72),
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.0)
-            .chain(CurveTween(curve: Curves.easeInOutCubic)),
+        tween: Tween(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeInOutCubic)),
         weight: 28,
       ),
     ]).animate(_c);

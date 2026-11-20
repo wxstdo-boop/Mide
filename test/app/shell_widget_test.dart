@@ -169,15 +169,13 @@ void main() {
     });
 
     testWidgets('only the product name gets the brand dot', (tester) async {
-      int brandDots() => tester
-          .widgetList<Container>(find.byType(Container))
-          .where((c) {
+      int brandDots() =>
+          tester.widgetList<Container>(find.byType(Container)).where((c) {
             final d = c.decoration;
             return d is BoxDecoration &&
                 d.shape == BoxShape.circle &&
                 d.boxShadow != null;
-          })
-          .length;
+          }).length;
 
       await pumpApp(tester);
       expect(brandDots(), 1, reason: 'the NPV header shows "MIDE."');
