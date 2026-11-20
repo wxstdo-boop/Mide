@@ -166,3 +166,28 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
   over a fake `HttpClientAdapter` (only the wire is stubbed) and fakes
   `PathProviderPlatform` for the download dir. Use that pair as the pattern for
   any new download/file logic.
+
+## Mide — launch splash
+
+- `_SplashShell` in `lib/main.dart` owns one 1.7s `AnimationController`; every
+  phase is a `TweenSequence` **whose weights must total 100**. Flutter
+  normalises weights to their own sum, so a sequence totalling 72 spreads over
+  the whole timeline and silently stretches its last phase to the end. That bug
+  kept the wordmark drawn while the backdrop was already lifting, and the app's
+  own header bleeding through the overlap read as a "grey underline under MIDE".
+  It was never a text decoration.
+- Put the curve on each phase (`Tween(...).chain(CurveTween(...))`) and leave the
+  controller linear. One `CurvedAnimation` wrapped around a whole sequence warps
+  the timeline instead of shaping the individual phases.
+- The backdrop gradient must match `res/drawable/launch_background.xml`
+  (`drawable-night` for dark) stop for stop, or the cold-start window and the
+  Flutter splash step visibly at hand-off.
+- The emblem must hold at scale **1.0**. A constant `0.92` resamples the
+  rasterised subtree for the whole hold and softens the glyph; pair it with
+  `FilterQuality.high`.
+- `assets/icon/mide_mark.png` has its ink 57.5/1024 right of the canvas centre.
+  Correct it with a `FractionalTranslation` **inside** the padding — applying the
+  fraction to the chip box overshoots by ~9px.
+- `test/app/shell_widget_test.dart` samples the overlay opacity across the exit
+  window and asserts the fade is monotonic with several distinct values. If you
+  retime the splash, retime those samples with it.
