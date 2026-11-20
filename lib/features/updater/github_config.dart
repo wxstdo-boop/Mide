@@ -25,7 +25,7 @@ class GithubConfig {
   /// Version from `pubspec.yaml`, generated into the app at build time by
   /// Flutter as the Android/iOS versionName. Kept as a static so tests can
   /// exercise the comparison without a platform channel.
-  static const String fallbackVersion = '1.0.6';
+  static const String fallbackVersion = '1.0.7';
 
   static Future<String> resolveCurrentVersion() async {
     if (_compileTimeVersion.isNotEmpty) return _compileTimeVersion;
