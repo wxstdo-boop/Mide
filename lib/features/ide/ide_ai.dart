@@ -22,10 +22,18 @@ import 'ide_providers.dart';
 /// limits).
 const String ideKiloKeyPlaceholder = 'Bearer PASTE_YOUR_FREE_KILO_KEY';
 
+/// Only ids that answered a live request (2026-11) belong here. Kilo's free
+/// catalogue churns, and a dead id costs a rotation slot on every message
+/// before the request even reaches a working model. `minimax/minimax-m2.1`
+/// and `z-ai/glm-5` were removed after returning 404 "model does not exist".
 const LlmProvider kiloProvider = LlmProvider(
   label: 'Kilo',
   baseUrl: 'https://api.kilo.ai/api/gateway',
-  models: ['kilo-auto/free', 'minimax/minimax-m2.1:free', 'z-ai/glm-5:free'],
+  models: [
+    'kilo-auto/free',
+    'nvidia/nemotron-3-ultra-550b-a55b:free',
+    'nvidia/nemotron-3.5-lightning:free',
+  ],
 );
 
 /// IDE rotation order: Kilo (anonymous) → Pollinations → AI Horde.
