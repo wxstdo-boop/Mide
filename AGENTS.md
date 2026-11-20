@@ -91,6 +91,11 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
   is unit-tested, the IDE notifiers are tested against a temp directory.
   Widget tests for the chrome live in `test/app/shell_widget_test.dart`
   (splash hand-off, pill press feedback/switch, Settings update section).
+  `test/app/no_overflow_test.dart` boots every section plus the 3D and Clip
+  Studio pages at 320/360/411dp and fails on any layout exception — the test
+  surface is 800x600 by default, so narrow-phone overflows are invisible
+  without it. `test/app/theme_carousel_test.dart` asserts a single swipe
+  notifies `themeChoiceProvider` at most once.
   Widget tests must import `package:material_ui/material_ui.dart` — the app
   does not use `package:flutter/material.dart`, so finders built against the
   latter silently match nothing.
