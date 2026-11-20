@@ -2,7 +2,7 @@
 
 Кодинг-агент для Mide на **@cline/sdk**: те же тулы, что у расширения Cline —
 читает и ищет по проекту, правит файлы, запускает команды, читает веб.
-Модель любая, включая бесплатные (OVH / LLM7 / Ollama локально).
+Модель любая, включая бесплатные (Pollinations / AI Horde / Ollama локально).
 
 ```
 Mide (IDE, плашка «Агент») ──HTTP/SSE──▶  этот sidecar (Node.js)
@@ -42,9 +42,20 @@ Mide запускает sidecar сам (плашка «Полноценный а
 - **Локально, бесплатно:** [Ollama](https://ollama.com) + `ollama pull qwen2.5-coder:7b`,
   затем `PROVIDER=ollama`, `MODEL=qwen2.5-coder:7b` — интернет не нужен.
 - **Без ключа:** `PROVIDER=openai-compatible` +
-  `BASE_URL=https://oai.endpoints.kepler.ai.cloud.ovh.net/v1`, `MODEL=gpt-oss-20b`
-  (этот вариант Mide использует по умолчанию).
+  `BASE_URL=https://text.pollinations.ai/openai`, `MODEL=gpt-oss-20b`
+  (этот вариант Mide использует по умолчанию). Запасной —
+  `BASE_URL=https://oai.aihorde.net/v1` с `API_KEY=0000000000`.
 - `PROVIDER=google` / `openrouter` + ключ — есть бесплатные тиры.
+
+## Проверено вживую (2026-11)
+
+| Провайдер | Анонимно | Комментарий |
+|---|---|---|
+| Pollinations (`text.pollinations.ai`) | да | нужен браузерный User-Agent |
+| AI Horde (`oai.aihorde.net`) | да | ключ `0000000000`, низкий приоритет |
+| Ollama (локально) | да | без интернета |
+| LLM7.io | нет | 401 «Missing API key» на всех моделях |
+| OVHcloud Kepler | нет | TLS-хендшейк обрывается, эндпоинт мёртв |
 
 ## API
 

@@ -30,6 +30,7 @@ dependencies:
   # (libx264). The default package bundles every codec and triples the APK.
   ffmpeg_kit_flutter_new_min_gpl: ^2.6.8
   video_player: ^2.14.1
+  package_info_plus: ^9.0.1
 
 dev_dependencies:
   flutter_test:

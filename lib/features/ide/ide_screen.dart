@@ -466,7 +466,7 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
                   _FeatureChip(label: 'Файловое дерево'),
                   _FeatureChip(label: 'Ctrl+S · Tab · F5'),
                   _FeatureChip(label: 'Запуск dart/py/js'),
-                  _FeatureChip(label: 'Kilo · OVHcloud · LLM7'),
+                  _FeatureChip(label: 'Kilo · Pollinations · Horde'),
                 ],
               ),
             ],
@@ -561,7 +561,7 @@ class _IdeScreenState extends ConsumerState<IdeScreen> {
           ],
           const Spacer(),
           Text(
-            'Kilo · OVH · LLM7',
+            'Kilo · Pollinations · Horde',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,

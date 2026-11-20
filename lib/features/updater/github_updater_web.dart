@@ -9,13 +9,13 @@ import 'github_config.dart';
 import 'updater_types.dart';
 
 class GithubUpdater {
-  const GithubUpdater({
-    this.dio,
-    this.currentVersion = GithubConfig.currentVersion,
-  });
+  const GithubUpdater({this.dio, this.currentVersion});
 
   final Dio? dio;
-  final String currentVersion;
+
+  /// Installed app version. Resolved from the real package metadata when not
+  /// injected, so the updater never compares against a stale constant.
+  final String? currentVersion;
 
   static Dio _makeDefault() => Dio(
     BaseOptions(
@@ -49,10 +49,12 @@ class GithubUpdater {
       final body = (data['body'] ?? '').toString();
       final publishedAt = (data['published_at'] ?? '').toString();
       final version = _stripV(tag);
-      final comparison = compareVersions(version, currentVersion);
+      final installed =
+          currentVersion ?? await GithubConfig.resolveCurrentVersion();
+      final comparison = compareVersions(version, installed);
       if (comparison == null) {
         return UpdateCheckResult.failure(
-          'Не удалось сравнить версии $currentVersion и $version',
+          'Не удалось сравнить версии $installed и $version',
         );
       }
       if (comparison <= 0) {

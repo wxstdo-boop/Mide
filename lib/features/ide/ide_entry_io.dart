@@ -112,7 +112,7 @@ class IdeEntryPill extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Халявный кодинг: Kilo · OVHcloud · LLM7',
+                      'Халявный кодинг: Kilo · Pollinations · Horde',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

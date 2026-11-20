@@ -113,7 +113,7 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
   /// [_tabs] below.
   late final AnimationController _anim = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 480),
+    duration: const Duration(milliseconds: 620),
     upperBound: 4.0,
   );
 
@@ -150,7 +150,7 @@ class _TabPillBarState extends ConsumerState<_TabPillBar>
     final scheme = Theme.of(context).colorScheme;
     ref.watch(appTabProvider);
     ref.listen<int>(appTabProvider, (prev, next) {
-      _anim.animateTo(next.toDouble(), curve: Curves.easeOutCubic);
+      _anim.animateTo(next.toDouble(), curve: Curves.easeOutQuint);
     });
     return SafeArea(
       top: false,
@@ -270,8 +270,11 @@ class _TabPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // No explicit label: the inner [Text] already provides it, so screen
-    // readers and the OS see "AGI"/"NPV" once instead of "AGI AGI".
+    final scheme = Theme.of(context).colorScheme;
+    // Bloody, semi-transparent press feedback: the ripple is crimson instead
+    // of the default grey, and the pill itself tints on hold so a tap reads
+    // instantly even before the bubble finishes sliding.
+    final blood = scheme.primary;
     return Semantics(
       button: true,
       label: showLabel ? null : label,
@@ -280,6 +283,9 @@ class _TabPill extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(999),
+          splashColor: blood.withValues(alpha: 0.28),
+          highlightColor: blood.withValues(alpha: 0.16),
+          hoverColor: blood.withValues(alpha: 0.10),
           child: SizedBox(
             height: 34,
             child: Row(

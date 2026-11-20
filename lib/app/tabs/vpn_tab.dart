@@ -73,8 +73,8 @@ class VpnTab extends ConsumerWidget {
               children: [
                 _AppHeader(
                   image: 'assets/icon/mide.png',
-                  title: 'Mide',
-                  version: '0.75b',
+                  title: 'MIDE',
+                  version: appVersionLabel,
                   actions: [
                     IconButton.filledTonal(
                       onPressed: () => _openMail(context),

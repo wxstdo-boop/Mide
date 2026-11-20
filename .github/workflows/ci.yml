@@ -75,3 +75,44 @@ jobs:
       # toolchain (Gradle, AGP, Kotlin, native plugins) for the release ABI.
       - name: Build debug APK (arm64)
         run: flutter build apk --debug --target-platform android-arm64
+
+  agent-sidecar:
+    # The PC IDE's coding agent is a separate Node package. It is not part of
+    # the Flutter build, so nothing else would notice a broken sidecar.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: agent/package-lock.json
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Syntax check
+        run: node --check src/index.mjs
+
+      # Boot the server and hit /health: proves the entrypoint, the HTTP
+      # routing and the tool wiring all come up on a clean machine.
+      - name: Smoke test /health
+        run: |
+          PROVIDER=ollama AGENT_PORT=8765 node src/index.mjs &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8765/health > /tmp/health.json; then
+              cat /tmp/health.json
+              node -e 'const h=require("/tmp/health.json"); if(!h.ok) process.exit(1);'
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "sidecar did not answer /health" >&2
+          exit 1

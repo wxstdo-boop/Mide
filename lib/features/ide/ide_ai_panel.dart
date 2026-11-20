@@ -1,4 +1,4 @@
-// PC-only IDE — right AI coding panel (Kilo / LLM7 / OVHcloud).
+// PC-only IDE — right AI coding panel (Kilo / Pollinations / Horde).
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -160,7 +160,7 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                     child: Padding(
                       padding: const EdgeInsets.all(18),
                       child: Text(
-                        'Файл уходит в Kilo / LLM7 / OVH автоматически.',
+                        'Файл уходит в Kilo / Pollinations / Horde автоматически.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,
@@ -247,7 +247,7 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
     );
   }
 
-  /// Free Kilo key dialog — the key is optional (LLM7/OVH work keyless).
+  /// Free Kilo key dialog — the key is optional (Pollinations/Horde work keyless).
   void _showKiloKeyDialog() {
     final ref0 = ref;
     showModalBottomSheet<void>(
@@ -280,7 +280,7 @@ class _IdeAiPanelState extends ConsumerState<IdeAiPanel> {
                 const SizedBox(height: 6),
                 Text(
                   'Бесплатно на app.kilo.ai (без карты). Без ключа ротация '
-                  'просто пропускает Kilo и отвечает LLM7 / OVH.',
+                  'просто пропускает Kilo и отвечает Pollinations / Horde.',
                   style: TextStyle(
                     fontSize: 12.5,
                     height: 1.45,

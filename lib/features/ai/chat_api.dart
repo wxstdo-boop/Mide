@@ -1,5 +1,5 @@
 // Shared OpenAI-compatible chat client (non-streaming, anonymous).
-// Supports multiple providers: LLM7, OVH, Horde, Pollinations.
+// Supports multiple providers: Pollinations, AI Horde, Kilo.
 import 'package:dio/dio.dart';
 
 /// Exception carrying a status code so the rotation layer can decide
@@ -16,7 +16,7 @@ class LlmException implements Exception {
 
 /// One provider (base URL + label + model list + optional auth).
 class LlmProvider {
-  final String label; // "Horde", "Pollinations", "LLM7", "OVH"
+  final String label; // "Pollinations", "Horde", "Kilo"
   final String baseUrl; // without trailing slash, e.g. https://api.llm7.io/v1
   final List<String> models;
 

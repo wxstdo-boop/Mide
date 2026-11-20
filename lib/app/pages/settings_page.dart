@@ -692,6 +692,7 @@ class _UpdateSection extends StatefulWidget {
 class _UpdateSectionState extends State<_UpdateSection> {
   bool _checking = false;
   bool _installing = false;
+  double? _progress;
   UpdateCheckResult? _result;
 
   bool get _busy => _checking || _installing;
@@ -710,8 +711,18 @@ class _UpdateSectionState extends State<_UpdateSection> {
         }
       });
       if (res.hasUpdate) {
-        final done = await githubUpdater.downloadAndInstall(res);
-        if (mounted) setState(() => _result = done);
+        final done = await githubUpdater.downloadAndInstall(
+          res,
+          onProgress: (p) {
+            if (mounted) setState(() => _progress = p);
+          },
+        );
+        if (mounted) {
+          setState(() {
+            _result = done;
+            _progress = null;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -722,6 +733,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
         setState(() {
           _checking = false;
           _installing = false;
+          _progress = null;
         });
       }
     }
@@ -755,7 +767,9 @@ class _UpdateSectionState extends State<_UpdateSection> {
                   )
                 : const Icon(Icons.system_update_alt_rounded),
             label: Text(
-              _installing
+              _installing && _progress != null
+                  ? 'Скачиваем ${(_progress! * 100).round()}%…'
+                  : _installing
                   ? 'Скачиваем и открываем установщик…'
                   : _checking
                   ? 'Ищем новый релиз…'
@@ -765,6 +779,17 @@ class _UpdateSectionState extends State<_UpdateSection> {
             ),
           ),
         ),
+        if (_installing && _progress != null) ...[
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: _progress,
+              minHeight: 6,
+              backgroundColor: scheme.surfaceContainerHighest,
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         _buildResult(scheme, res),
         const SizedBox(height: 8),

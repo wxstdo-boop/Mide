@@ -105,7 +105,7 @@ class _ClipStudioTabState extends ConsumerState<ClipStudioTab> {
               child: _AppHeader(
                 image: 'assets/icon/mide.png',
                 title: 'Clip Studio',
-                version: '0.9b',
+                version: appVersionLabel,
                 actions: [
                   IconButton.filledTonal(
                     tooltip: 'Добавить медиа',

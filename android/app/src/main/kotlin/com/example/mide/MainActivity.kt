@@ -1,6 +1,7 @@
 package com.example.mide
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -13,6 +14,26 @@ import java.io.File
 
 class MainActivity : FlutterActivity() {
     private var pendingApkPath: String? = null
+
+    /// Signing certificate of the *installed* app. An update must be signed by
+    /// the same key; Android enforces this too, but checking first turns a
+    /// confusing "App not installed" into a clear error.
+    private val ownSigner: String? by lazy {
+        runCatching {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageManager.getPackageInfo(
+                    packageName,
+                    PackageManager.GET_SIGNING_CERTIFICATES
+                ).signingInfo?.apkContentsSigners?.firstOrNull()
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(
+                    packageName,
+                    PackageManager.GET_SIGNATURES
+                ).signatures?.firstOrNull()
+            }?.toByteArray()?.let { sha256Hex(it) }
+        }.getOrNull()
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -34,6 +55,28 @@ class MainActivity : FlutterActivity() {
             val apk = File(path)
             if (!apk.isFile) {
                 result.error("missing_apk", "Downloaded APK was not found", null)
+                return@setMethodCallHandler
+            }
+
+            // Fail closed: an APK we cannot parse is exactly the case the
+            // check exists for (truncated download, repacked file), so it must
+            // not fall through to the installer.
+            val apkSigner = apkSignerHex(apk)
+            if (apkSigner == null) {
+                result.error(
+                    "signature_unreadable",
+                    "Не удалось прочитать подпись APK — установка отменена",
+                    null
+                )
+                return@setMethodCallHandler
+            }
+            val expectedSigner = ownSigner
+            if (expectedSigner != null && apkSigner != expectedSigner) {
+                result.error(
+                    "signature_mismatch",
+                    "APK подписан другим ключом — установка отменена",
+                    null
+                )
                 return@setMethodCallHandler
             }
 
@@ -72,6 +115,36 @@ class MainActivity : FlutterActivity() {
             }
         }
     }
+
+    /// SHA-256 of the first signing certificate inside [apk], or null when the
+    /// file cannot be parsed as a package (e.g. a corrupt download).
+    private fun apkSignerHex(apk: File): String? = runCatching {
+        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageManager.getPackageArchiveInfo(
+                apk.absolutePath,
+                PackageManager.GET_SIGNING_CERTIFICATES
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageArchiveInfo(
+                apk.absolutePath,
+                PackageManager.GET_SIGNATURES
+            )
+        } ?: return null
+
+        val certBytes = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            info.signingInfo?.apkContentsSigners?.firstOrNull()?.toByteArray()
+        } else {
+            @Suppress("DEPRECATION")
+            info.signatures?.firstOrNull()?.toByteArray()
+        }
+        certBytes?.let { sha256Hex(it) }
+    }.getOrNull()
+
+    private fun sha256Hex(bytes: ByteArray): String =
+        java.security.MessageDigest.getInstance("SHA-256")
+            .digest(bytes)
+            .joinToString("") { "%02x".format(it) }
 
     private fun openApk(apk: File) {
         val uri = FileProvider.getUriForFile(

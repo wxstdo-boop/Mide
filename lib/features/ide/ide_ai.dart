@@ -1,60 +1,40 @@
-// Free coding providers for the PC IDE: Kilo → LLM7 → OVHcloud.
-// Same LlmProvider/OpenAiClient plumbing as the Ada chat (features/ai),
-// but a coding-focused rotation and a longer receive timeout for big
-// code answers.
+// Free coding providers for the PC IDE: Kilo (anonymous) → Pollinations →
+// AI Horde. Same LlmProvider/OpenAiClient plumbing as the AI chat
+// (features/ai), but a coding-focused rotation and a longer receive timeout
+// for big code answers.
+//
+// LLM7 and OVHcloud were dropped after probing (2026-11): LLM7 answers 401
+// "Missing API key" on every model, and the OVH endpoint fails the TLS
+// handshake outright.
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../ai/chat_api.dart';
 import '../ai/ai_model.dart';
+import '../ai/providers_registry.dart';
 import 'ide_providers.dart';
 
-/// Kilo Gateway (https://api.kilo.ai) — free `:free` models. Anonymous
-/// access is currently rejected (403) for some networks, so the rotation
-/// tries it first and instantly falls through unless the user pasted a
-/// free API key (register at https://app.kilo.ai — no card required).
+/// Kilo Gateway (https://api.kilo.ai) — free `:free` models that answer
+/// *without* an Authorization header. Sending the old placeholder token
+/// produced a hard 401, so the header is now omitted unless the user pastes
+/// a real key from https://app.kilo.ai (no card required, only raises
+/// limits).
 const String ideKiloKeyPlaceholder = 'Bearer PASTE_YOUR_FREE_KILO_KEY';
 
 const LlmProvider kiloProvider = LlmProvider(
   label: 'Kilo',
   baseUrl: 'https://api.kilo.ai/api/gateway',
   models: ['kilo-auto/free', 'minimax/minimax-m2.1:free', 'z-ai/glm-5:free'],
-  authHeader: ideKiloKeyPlaceholder,
 );
 
-/// LLM7.io — free keyless gateway (verified working, 2026-09).
-const LlmProvider llm7Provider = LlmProvider(
-  label: 'LLM7',
-  baseUrl: 'https://api.llm7.io/v1',
-  models: [
-    'minimax-m2.7',
-    'DeepSeek-V4-Flash-0731',
-    'gemini-3.1-flash-lite',
-    'gemma4:31b',
-  ],
-);
-
-/// OVHcloud AI Endpoints — keyless per-IP rate limit (429 rotates away).
-/// Model list refreshed against GET /v1/models (2026-09): Qwen3-32B is
-/// gone, coding models Qwen3-Coder / gpt-oss are live.
-const LlmProvider ovhProvider = LlmProvider(
-  label: 'OVH',
-  baseUrl: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
-  models: [
-    'Qwen3-Coder-30B-A3B-Instruct',
-    'gpt-oss-20b',
-    'Qwen3.6-27B',
-    'Mistral-Small-3.2-24B-Instruct-2506',
-    'Meta-Llama-3_3-70B-Instruct',
-  ],
-);
-
-/// IDE rotation order: Kilo (free models) → LLM7 → OVHcloud.
+/// IDE rotation order: Kilo (anonymous) → Pollinations → AI Horde.
+/// The last two are the same anonymous endpoints the AI chat uses, so the
+/// IDE keeps answering when Kilo is rate-limited.
 const List<LlmProvider> ideCodingProviders = <LlmProvider>[
   kiloProvider,
-  llm7Provider,
-  ovhProvider,
+  pollinations,
+  horde,
 ];
 
 /// (providerIndex, modelIndex) pair in rotation order.
@@ -129,7 +109,7 @@ class IdeAiState {
   final bool busy;
   final String? error;
 
-  /// Label of the provider currently in play («Kilo» / «LLM7» / «OVH»).
+  /// Label of the provider currently in play («Kilo» / «Pollinations» / «Horde»).
   final String providerLabel;
 
   const IdeAiState({
@@ -182,7 +162,7 @@ class IdeAiNotifier extends Notifier<IdeAiState> {
   }
 
   /// Sends [question] with the active file attached as context and rotates
-  /// across Kilo → LLM7 → OVH until one answers.
+  /// across Kilo → Pollinations → Horde until one answers.
   Future<void> ask(String question) async {
     final q = question.trim();
     if (q.isEmpty || state.busy) return;
@@ -227,12 +207,10 @@ class IdeAiNotifier extends Notifier<IdeAiState> {
       final provider = ideCodingProviders[slot.provider];
       final model = provider.models[slot.model];
 
-      // Inject the persisted Kilo key at request time (placeholder fast-skip
-      // stays in place when the user has not pasted one yet).
-      final effective = provider.label == 'Kilo'
-          ? provider.withAuth(
-              kiloKey.isEmpty ? ideKiloKeyPlaceholder : 'Bearer $kiloKey',
-            )
+      // Kilo answers anonymously; only attach an Authorization header once
+      // the user has pasted a real key (the placeholder was a hard 401).
+      final effective = provider.label == 'Kilo' && kiloKey.isNotEmpty
+          ? provider.withAuth('Bearer $kiloKey')
           : provider;
 
       state = state.copyWith(providerLabel: effective.label);
@@ -265,7 +243,9 @@ class IdeAiNotifier extends Notifier<IdeAiState> {
       }
     }
     if (!_cancelled) {
-      _fail('Все бесплатные провайдеры заняты (Kilo/OVH/LLM7). Повтори позже.');
+      _fail(
+        'Все бесплатные провайдеры заняты (Kilo/Pollinations/Horde). Повтори позже.',
+      );
     }
   }
 

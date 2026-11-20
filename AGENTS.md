@@ -73,9 +73,12 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
 - `lib/core/` — theme (Material You) and the persisted active-tab state.
 - `lib/features/{ai,clip,ide,updater,vpn}/` — feature code; platform-split files
   use the `_io.dart` / `_stub.dart` (or `_web.dart`) conditional-export pattern.
-  - `features/ai` — Ada chat; personas are Riverpod families keyed by
+  - `features/ai` — MIDE AI chat; personas are Riverpod families keyed by
     `PersonaArg` (system prompt + storage key), so each persona keeps its own
-    persisted conversation. `aiSessionProvider` is the Ada instance.
+    persisted conversation. `aiSessionProvider` is the main instance.
+    `providers_registry.dart` holds the anonymous provider list — keep it to
+    endpoints that answer without a user key (verified: Pollinations, AI
+    Horde; dead: LLM7, OVHcloud).
   - `features/clip` — Clip Studio. `clip_models.dart` / `clip_ffmpeg.dart` are
     pure and unit-tested; `clip_export_io.dart` is the only FFmpeg/filesystem
     touchpoint and is behind the `clip_export.dart` conditional facade. The
@@ -84,6 +87,11 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
     both keep the release APK near 30 MB instead of 200 MB.
 - Tests live under `test/features/...` mirroring `lib/features/...`; pure logic
   is unit-tested, the IDE notifiers are tested against a temp directory.
+  Widget tests for the chrome live in `test/app/shell_widget_test.dart`
+  (splash hand-off, pill press feedback/switch, Settings update section).
+  Widget tests must import `package:material_ui/material_ui.dart` — the app
+  does not use `package:flutter/material.dart`, so finders built against the
+  latter silently match nothing.
 
 ## Mide — CI and releases
 
@@ -99,6 +107,9 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
   `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`);
   the build fails fast if any are missing.
 - Both workflows pin `FLUTTER_VERSION` so CI and releases share one toolchain.
+- `ci.yml` also has an `agent-sidecar` job: `npm ci`, `node --check`, then it
+  boots `agent/src/index.mjs` and requires a healthy `/health`. The sidecar is
+  a separate Node package, so nothing in the Flutter build would catch it.
 - Both workflows pin JDK 21 (`actions/setup-java`). AGP 9.3.1's lint crashes
   with a `NoSuchMethodError` in `JavaDocParser` on JDK 17, and that lint only
   runs for release builds (`lintVitalAnalyzeRelease`), so the debug APK CI job

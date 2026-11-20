@@ -104,6 +104,6 @@ class ClineAgentException implements Exception {
 }
 
 /// Free keyless OpenAI-compatible endpoint the sidecar is launched against.
-const String kClineAgentBaseUrl =
-    'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
+/// Pollinations replaces the dead OVHcloud endpoint (TLS handshake fails).
+const String kClineAgentBaseUrl = 'https://text.pollinations.ai/openai';
 const String kClineAgentModel = 'gpt-oss-20b';

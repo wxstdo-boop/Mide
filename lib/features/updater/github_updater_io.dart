@@ -15,14 +15,14 @@ import 'github_config.dart';
 import 'updater_types.dart';
 
 class GithubUpdater {
-  const GithubUpdater({
-    this.dio,
-    this.currentVersion = GithubConfig.currentVersion,
-  });
+  const GithubUpdater({this.dio, this.currentVersion});
 
   /// Injectable for tests; a default is created otherwise.
   final Dio? dio;
-  final String currentVersion;
+
+  /// Installed app version. Resolved from the real package metadata when not
+  /// injected, so the updater never compares against a stale constant.
+  final String? currentVersion;
 
   static const MethodChannel _installerChannel = MethodChannel(
     'mide/update_installer',
@@ -63,10 +63,12 @@ class GithubUpdater {
       final body = (data['body'] ?? '').toString();
       final publishedAt = (data['published_at'] ?? '').toString();
       final version = _stripV(tag);
-      final comparison = compareVersions(version, currentVersion);
+      final installed =
+          currentVersion ?? await GithubConfig.resolveCurrentVersion();
+      final comparison = compareVersions(version, installed);
       if (comparison == null) {
         return UpdateCheckResult.failure(
-          'Не удалось сравнить версии $currentVersion и $version',
+          'Не удалось сравнить версии $installed и $version',
         );
       }
       if (comparison <= 0) {
@@ -109,7 +111,12 @@ class GithubUpdater {
   }
 
   /// Download [asset] to the OS downloads dir and launch the installer.
-  Future<UpdateCheckResult> downloadAndInstall(UpdateCheckResult source) async {
+  /// [onProgress] reports 0..1 while the bytes arrive (null when the server
+  /// sends no Content-Length).
+  Future<UpdateCheckResult> downloadAndInstall(
+    UpdateCheckResult source, {
+    void Function(double? progress)? onProgress,
+  }) async {
     final asset = source.asset;
     if (asset == null) return source;
 
@@ -117,7 +124,22 @@ class GithubUpdater {
     final safe = asset.name.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
     final target = '$dir${io.Platform.pathSeparator}$safe';
 
-    await _client.download(asset.url, target, deleteOnError: true);
+    await _client.download(
+      asset.url,
+      target,
+      deleteOnError: true,
+      onReceiveProgress: onProgress == null
+          ? null
+          : (received, total) {
+              if (total > 0) {
+                onProgress(received / total);
+              } else if (asset.sizeBytes > 0) {
+                onProgress((received / asset.sizeBytes).clamp(0.0, 1.0));
+              } else {
+                onProgress(null);
+              }
+            },
+    );
 
     if (!io.File(target).existsSync()) {
       return UpdateCheckResult.failure('Файл не сохранился');
@@ -133,9 +155,24 @@ class GithubUpdater {
     }
 
     if (io.Platform.isAndroid && asset.name.toLowerCase().endsWith('.apk')) {
-      await _installerChannel.invokeMethod<void>('installApk', {
-        'path': target,
-      });
+      try {
+        await _installerChannel.invokeMethod<void>('installApk', {
+          'path': target,
+        });
+      } on PlatformException catch (e) {
+        // The native side refuses to install an APK it cannot verify; surface
+        // that as the user-facing reason instead of a raw platform error.
+        final reason = switch (e.code) {
+          'signature_mismatch' =>
+            'APK подписан другим ключом — обновление отменено',
+          'signature_unreadable' =>
+            'Подпись APK не читается — обновление отменено',
+          'missing_apk' => 'Скачанный APK не найден — попробуй ещё раз',
+          'invalid_path' => 'Некорректный путь к APK',
+          _ => 'Установщик не открылся: ${e.message ?? e.code}',
+        };
+        return UpdateCheckResult.failure(reason);
+      }
     } else {
       await _launch(target, asset.name);
     }
@@ -175,8 +212,16 @@ class GithubUpdater {
   // ── Internals ─────────────────────────────────────────────────────────────
 
   Future<String> _downloadsDir() async {
-    if (io.Platform.isAndroid || io.Platform.isIOS) {
-      // Application downloads dir; the install dialog picks it up.
+    if (io.Platform.isAndroid) {
+      // Must live under the FileProvider `files-path` root, otherwise
+      // `FileProvider.getUriForFile` throws "Failed to find configured root"
+      // and the install dialog never opens.
+      final app = await getApplicationSupportDirectory();
+      final d = io.Directory('${app.path}/downloads')
+        ..createSync(recursive: true);
+      return d.path;
+    }
+    if (io.Platform.isIOS) {
       final app = await getApplicationDocumentsDirectory();
       final d = io.Directory('${app.path}/downloads')
         ..createSync(recursive: true);

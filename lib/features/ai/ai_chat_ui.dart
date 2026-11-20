@@ -1,9 +1,9 @@
-// Ada (M.AI) section UI.
-// - Red shimmering "АДУСЯ" header
-// - "Ада_" with breathing underscore
+// AI section UI.
+// - Red shimmering "MIDE" header
+// - "MIDE" wordmark with the AI disclaimer
 // - Horde / Pollinations provider badge (cross-fades on provider change)
 // - Send/stop button (clean quick swap, no stickiness)
-// - "Ада занята, попробуй позже!" error card
+// - "Ассистент занят, попробуй позже!" error card
 // - While thinking: a bare red blinking underscore (no bubble). When the
 //   answer lands it cross-fades into the finished bubble.
 import 'dart:math' as math;
@@ -145,9 +145,9 @@ class _AiTabState extends ConsumerState<AiTab> {
                   child: Image.asset('assets/icon/mide.png', fit: BoxFit.cover),
                 ),
                 const SizedBox(width: 12),
-                const _ShimmerTitle(text: 'АДУСЯ'),
+                const _ShimmerTitle(text: 'MIDE'),
                 const SizedBox(width: 8),
-                const _Badge(text: 'M.AI'),
+                const _Badge(text: 'AI'),
                 const Spacer(),
                 _HeaderIconButton(
                   icon: Icons.cleaning_services_rounded,
@@ -161,12 +161,11 @@ class _AiTabState extends ConsumerState<AiTab> {
               ],
             ),
             const SizedBox(height: 14),
-            // Row 2: "Ада_" centered with the disclaimer under it.
+            // Row 2: wordmark centered with the disclaimer under it. No
+            // breathing underscore: the blinking glyph read as a stray
+            // underline rather than branding.
             const Center(
-              child: _AdaBrand(
-                fontSize: 28,
-                subtitle: 'AGI Can Make Mistakes.',
-              ),
+              child: _AdaBrand(fontSize: 26, subtitle: 'AI Can Make Mistakes.'),
             ),
             const SizedBox(height: 12),
             // Row 3: provider controls — compact and tidy.
@@ -199,7 +198,7 @@ class _AiTabState extends ConsumerState<AiTab> {
             _Composer(
               busy: s.busy,
               controller: _input,
-              hint: 'Ада жаждет...',
+              hint: 'Спроси что угодно…',
               onSend: _send,
               onStop: notifier.cancel,
             ),
@@ -383,7 +382,7 @@ class _ProviderBadge extends StatelessWidget {
   }
 }
 
-// ── "Ада_" brand with breathing underscore ───────────────────────────────
+// ── "MIDE" wordmark ──────────────────────────────────────────────────────
 
 /// Small "Horde API" button next to the provider badge.
 /// Opens a bottom sheet where the user pastes their free stablehorde.net
@@ -560,7 +559,7 @@ class _HordeKeyButton extends ConsumerWidget {
   }
 }
 
-class _AdaBrand extends StatefulWidget {
+class _AdaBrand extends StatelessWidget {
   const _AdaBrand({this.fontSize = 20, this.subtitle});
 
   /// Larger brand for the top-center placement.
@@ -570,60 +569,20 @@ class _AdaBrand extends StatefulWidget {
   final String? subtitle;
 
   @override
-  State<_AdaBrand> createState() => _AdaBrandState();
-}
-
-class _AdaBrandState extends State<_AdaBrand>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1000),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final brand = Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          'Ада',
-          style: TextStyle(
-            color: scheme.onSurface,
-            fontSize: widget.fontSize,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.3,
-          ),
-        ),
-        AnimatedBuilder(
-          animation: _c,
-          builder: (_, __) {
-            final o = 0.15 + 0.85 * Curves.easeInOut.transform(_c.value);
-            return Opacity(
-              opacity: o,
-              child: Text(
-                '_',
-                style: TextStyle(
-                  color: scheme.primary,
-                  fontSize: widget.fontSize * 1.1,
-                  height: 0.8,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            );
-          },
-        ),
-      ],
+    final brand = Text(
+      'MIDE',
+      style: TextStyle(
+        color: scheme.onSurface,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 5,
+        height: 1.0,
+      ),
     );
 
-    if (widget.subtitle == null) return brand;
+    if (subtitle == null) return brand;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -631,7 +590,7 @@ class _AdaBrandState extends State<_AdaBrand>
         brand,
         const SizedBox(height: 6),
         Text(
-          widget.subtitle!,
+          subtitle!,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 12,
@@ -872,7 +831,7 @@ class _AnimatedErrorCardState extends State<_AnimatedErrorCard>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ада занята',
+                      'Ассистент занят',
                       style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,

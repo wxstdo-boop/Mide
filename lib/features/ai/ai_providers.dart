@@ -1,9 +1,8 @@
-// Ada (M.AI) chat session — rotates across Horde + Pollinations + LLM7 +
-// OVH. Non-streaming call; while waiting the UI shows a red thinking-blink,
-// then the full answer fades in. The Horde API key (free, from
-// stablehorde.net) is persisted separately and injected at request time;
-// without it the Horde slots fast-skip and the answer comes from an
-// anonymous provider.
+// AI chat session — rotates across Pollinations + AI Horde. Non-streaming
+// call; while waiting the UI shows a red thinking-blink, then the full
+// answer fades in. Horde ships an anonymous key, so the tab answers on a
+// fresh install; an optional free key from stablehorde.net (persisted
+// separately) only raises queue priority.
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -15,7 +14,7 @@ import 'chat_api.dart';
 import 'providers_registry.dart';
 
 /// The single user-visible error phrase for any AI failure.
-const String aiBusyPhrase = 'Ада занята, попробуй позже!';
+const String aiBusyPhrase = 'Ассистент занят, попробуй позже!';
 
 class AiSessionState {
   final List<AiMessage> messages;
@@ -23,7 +22,7 @@ class AiSessionState {
   final bool busy;
   final bool streaming;
 
-  /// Label of the provider currently "in play" (drives the LLM7↔OVH badge).
+  /// Label of the provider currently "in play" (drives the provider badge).
   final String providerLabel;
 
   const AiSessionState({
@@ -53,7 +52,7 @@ class AiSessionState {
 class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
   /// Default Ada persona used by the AGI tab.
   static const String adaSystemPrompt =
-      'Ты — Ада. Отвечай максимально коротко (1–3 предложения), по делу, в языке пользователя.';
+      'Ты — MIDE, встроенный ассистент. Отвечай максимально коротко (1–3 предложения), по делу, на языке пользователя.';
 
   static const String adaChatKey = 'mide_ai_chat_v1';
 
@@ -72,6 +71,10 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
   /// session — they will not recover without a key, so later requests skip
   /// them instead of burning a slot on every message.
   final Set<int> _authDeadProviders = <int>{};
+
+  /// `<provider>/<model>` ids that returned 404 this session (model retired
+  /// or never served). Kept so the rotation does not re-ask for them.
+  final Set<String> _deadModels = <String>{};
 
   /// Chat persistence: the last 1000 messages survive app restarts so the
   /// conversation is never wiped when the app reopens.
@@ -227,18 +230,17 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
       final idx = (_lastSlot + attempt) % slots.length;
       final slot = slots[idx];
       var provider = providers[slot.providerIndex];
-      // Skip providers that already returned an auth error this session, but
-      // re-enable Horde as soon as the user has supplied a key.
-      final hordeNowKeyed = provider.label == 'Horde' && hordeKey.isNotEmpty;
-      if (_authDeadProviders.contains(slot.providerIndex) && !hordeNowKeyed) {
-        continue;
-      }
-      // Inject the user's persisted Horde key so the top provider actually
-      // works once a free stablehorde.net key has been added.
+      // Skip providers that already returned an auth error this session.
+      if (_authDeadProviders.contains(slot.providerIndex)) continue;
+      // Horde ships an anonymous key, so it works out of the box; a personal
+      // stablehorde.net key (free) only raises queue priority.
       if (provider.label == 'Horde' && hordeKey.isNotEmpty) {
         provider = provider.withAuth('Bearer $hordeKey');
       }
       final model = provider.models[slot.modelIndex];
+      // A 404 earlier in this session means the id is gone from the gateway;
+      // retrying it on every message just wastes a round trip.
+      if (_deadModels.contains('${provider.label}/$model')) continue;
       try {
         final text = await _client.chat(
           provider: provider,
@@ -260,6 +262,9 @@ class AiSessionNotifier extends FamilyNotifier<AiSessionState, PersonaArg> {
         // provider so later requests stop paying for it.
         if (e.statusCode == 401 || e.statusCode == 403) {
           _authDeadProviders.add(slot.providerIndex);
+        }
+        if (e.statusCode == 404) {
+          _deadModels.add('${provider.label}/$model');
         }
         // Per-slot failure — remember it and rotate to the next slot so
         // the next question starts past the broken provider/model instead

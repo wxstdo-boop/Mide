@@ -1,3 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Roots the system installer may read the downloaded APK from.
+
+  path_provider's `getApplicationDocumentsDirectory()` resolves to
+  `<data dir>/app_flutter` on Android, which is NOT the `files` root, so a
+  `files-path`-only provider made FileProvider throw "Failed to find
+  configured root that contains ..." and the install dialog never opened.
+  The updater now saves into the support (`files`) dir; `cache-path` and the
+  `app_flutter` root stay as fallbacks for older builds.
+-->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <files-path name="app_files" path="." />
+    <cache-path name="app_cache" path="." />
+    <external-files-path name="app_external_files" path="." />
 </paths>

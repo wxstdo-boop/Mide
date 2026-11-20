@@ -19,7 +19,7 @@ void main() {
         authHeader: 'Bearer real-token',
       );
       const keyless = LlmProvider(
-        label: 'OVH',
+        label: 'Pollinations',
         baseUrl: 'https://x/v1',
         models: ['m'],
       );
@@ -60,30 +60,42 @@ void main() {
       }
     });
 
-    test('the placeholder-key Horde provider is last in rotation', () {
+    test('every provider answers anonymously (no placeholder keys)', () {
+      for (final p in providers) {
+        expect(p.needsKey, isFalse, reason: '\${p.label} needs a pasted key');
+      }
+      // Horde ships the documented anonymous key instead of a placeholder.
+      expect(horde.authHeader, 'Bearer 0000000000');
+      expect(pollinations.authHeader, isNull);
+    });
+
+    test('Pollinations is tried before the Horde queue', () {
+      expect(providers.first.label, 'Pollinations');
       expect(providers.last.label, 'Horde');
-      expect(providers.last.needsKey, isTrue);
     });
   });
 
   group('OpenAiClient fast-skip', () {
-    test(
-      'throws 401 without touching the network when a key is missing',
-      () async {
-        final client = OpenAiClient();
-        await expectLater(
-          client.chat(
-            provider: horde,
-            model: horde.models.first,
-            messages: const [
-              {'role': 'user', 'content': 'hi'},
-            ],
-          ),
-          throwsA(
-            isA<LlmException>().having((e) => e.statusCode, 'statusCode', 401),
-          ),
-        );
-      },
-    );
+    test('throws 401 without a request for an unfilled placeholder', () async {
+      const placeholder = LlmProvider(
+        label: 'SomeKeyed',
+        baseUrl: 'https://127.0.0.1:9/v1',
+        models: ['m'],
+        authHeader: 'Bearer PASTE_YOUR_KEY',
+      );
+      final client = OpenAiClient();
+      await expectLater(
+        client.chat(
+          provider: placeholder,
+          model: 'm',
+          messages: const [
+            {'role': 'user', 'content': 'hi'},
+          ],
+        ),
+        throwsA(
+          isA<LlmException>().having((e) => e.statusCode, 'statusCode', 401),
+        ),
+      );
+    });
   });
 }

@@ -19,6 +19,7 @@ import 'features/clip/clip_models.dart';
 import 'features/clip/clip_providers.dart';
 import 'features/clip/preview/clip_player.dart';
 import 'features/vpn/providers/vpn_providers.dart';
+import 'features/updater/github_config.dart';
 import 'features/updater/github_updater.dart';
 import 'features/updater/updater_types.dart';
 import 'features/vpn/vpn_settings.dart';
@@ -29,6 +30,10 @@ part 'app/tabs/mearn_tab.dart';
 part 'app/tabs/companion_tab.dart';
 part 'app/tabs/clip_studio_tab.dart';
 part 'app/pages/settings_page.dart';
+
+/// Version shown in the tab headers. Sourced from the same value the updater
+/// compares against, so the chip can never drift from the real build.
+String get appVersionLabel => GithubConfig.currentVersion;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -193,9 +198,14 @@ class _SplashShellState extends State<_SplashShell>
                       child: FadeTransition(
                         opacity: emblemOpacity,
                         // Scale is applied to the emblem alone — never to the
-                        // backdrop, or the edges would expose the app.
-                        child: Transform.scale(
-                          scale: scale.value,
+                        // backdrop, or the edges would expose the app. Driven
+                        // by AnimatedBuilder: reading `scale.value` straight in
+                        // build left the emblem frozen, so the exit looked like
+                        // a hard jump instead of a glide.
+                        child: AnimatedBuilder(
+                          animation: scale,
+                          builder: (context, child) =>
+                              Transform.scale(scale: scale.value, child: child),
                           child: _SplashEmblem(scheme: scheme),
                         ),
                       ),
@@ -294,24 +304,39 @@ class _SplashEmblem extends StatelessWidget {
         ),
         // 32dp clears the chip's blurred drop shadow (12dp offset + 12dp blur
         // reach) so the glow never bleeds into the wordmark.
-        const SizedBox(height: 32),
-        Text(
-          'Mide',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 4,
-            color: scheme.onSurface.withValues(alpha: 0.78),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Ада_',
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.2,
-            color: scheme.onSurfaceVariant.withValues(alpha: 0.85),
+        const SizedBox(height: 30),
+        // Big wordmark: the product name is the splash's focal point, so it is
+        // set large, wide-tracked and with a soft crimson glow instead of a
+        // small caption.
+        ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) => LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              scheme.onSurface,
+              Color.alphaBlend(
+                scheme.primary.withValues(alpha: 0.85),
+                scheme.onSurface,
+              ),
+            ],
+          ).createShader(bounds),
+          child: Text(
+            'MIDE',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 46,
+              height: 1.0,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 12,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  color: scheme.primary.withValues(alpha: 0.45),
+                  blurRadius: 24,
+                ),
+              ],
+            ),
           ),
         ),
       ],

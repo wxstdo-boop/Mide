@@ -60,7 +60,7 @@ class MEarnTab extends StatelessWidget {
             _AppHeader(
               image: 'assets/icon/mide.png',
               title: 'MEarn',
-              version: '0.75b',
+              version: appVersionLabel,
               actions: [
                 IconButton.filledTonal(
                   onPressed: () {},

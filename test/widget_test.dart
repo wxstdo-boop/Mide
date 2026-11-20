@@ -169,7 +169,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 2900));
     await tester.pumpAndSettle();
 
-    expect(find.text('Mide'), findsOneWidget);
+    // The splash hands off to the shell wordmark "MIDE".
+    expect(find.text('MIDE'), findsWidgets);
   });
 
   testWidgets('bottom pills show all five tabs', (tester) async {
@@ -213,13 +214,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 2900));
     await tester.pumpAndSettle();
 
-    // Switching to the AGI tab shows the AI section.
+    // Switching to the AGI tab shows the AI section, branded as MIDE.
     await tester.tap(find.text('AGI'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('АДУСЯ'), findsOneWidget);
-    expect(find.text('M.AI'), findsOneWidget);
-    expect(find.text('Ада'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(find.text('MIDE'), findsNWidgets(2)); // header shimmer + wordmark
+    expect(find.text('AI'), findsOneWidget);
+    expect(find.text('Ада'), findsNothing);
 
     // Switch to MEarn tab.
     await tester.tap(find.text('Earn'));
@@ -243,6 +244,7 @@ void main() {
     await tester.tap(find.text('NPV'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('Mide'), findsOneWidget);
+    // The splash hands off to the shell wordmark "MIDE".
+    expect(find.text('MIDE'), findsWidgets);
   });
 }
