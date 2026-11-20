@@ -12,9 +12,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'github_config.dart';
+import 'update_service.dart';
 import 'updater_types.dart';
 
-class GithubUpdater {
+class GithubUpdater implements UpdateService {
   const GithubUpdater({this.dio, this.currentVersion});
 
   /// Injectable for tests; a default is created otherwise.
@@ -41,6 +42,7 @@ class GithubUpdater {
   Dio get _client => dio ?? _makeDefault();
 
   /// Update check: never needs a token for the public repo.
+  @override
   Future<UpdateCheckResult> checkLatest() async {
     final client = _client;
     client.options.headers['User-Agent'] = 'MideAutoUpdater/1.0';
@@ -113,6 +115,7 @@ class GithubUpdater {
   /// Download [asset] to the OS downloads dir and launch the installer.
   /// [onProgress] reports 0..1 while the bytes arrive (null when the server
   /// sends no Content-Length).
+  @override
   Future<UpdateCheckResult> downloadAndInstall(
     UpdateCheckResult source, {
     void Function(double? progress)? onProgress,
@@ -199,6 +202,7 @@ class GithubUpdater {
   }
 
   /// Web / unsupported: just open the release page.
+  @override
   Future<void> openReleasePage(UpdateCheckResult result) async {
     final url = result.releaseUrl ?? GithubConfig.releasesPage;
     final uri = Uri.parse(url);

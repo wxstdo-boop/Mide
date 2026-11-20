@@ -20,7 +20,7 @@ import 'features/clip/clip_providers.dart';
 import 'features/clip/preview/clip_player.dart';
 import 'features/vpn/providers/vpn_providers.dart';
 import 'features/updater/github_config.dart';
-import 'features/updater/github_updater.dart';
+import 'features/updater/update_service.dart';
 import 'features/updater/updater_types.dart';
 import 'features/vpn/vpn_settings.dart';
 

@@ -682,52 +682,56 @@ class _ThemeCard extends StatelessWidget {
 
 /// One-tap update: checks the latest GitHub release, downloads the Android
 /// arm64 APK when needed, and opens Android's installer for confirmation.
-class _UpdateSection extends StatefulWidget {
+class _UpdateSection extends ConsumerStatefulWidget {
   const _UpdateSection();
 
   @override
-  State<_UpdateSection> createState() => _UpdateSectionState();
+  ConsumerState<_UpdateSection> createState() => _UpdateSectionState();
 }
 
-class _UpdateSectionState extends State<_UpdateSection> {
+class _UpdateSectionState extends ConsumerState<_UpdateSection> {
   bool _checking = false;
   bool _installing = false;
   double? _progress;
   UpdateCheckResult? _result;
 
-  bool get _busy => _checking || _installing;
+  @override
+  void initState() {
+    super.initState();
+    // No button: opening Settings is the check. The round-trip is cheap (one
+    // unauthenticated GitHub call) and a user who opens Settings is asking
+    // about exactly this.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _check());
+  }
 
   Future<void> _check() async {
-    if (_busy) return;
+    if (_checking || _installing) return;
     setState(() => _checking = true);
     try {
-      final res = await githubUpdater.checkLatest();
+      final res = await ref.read(updateServiceProvider).checkLatest();
       if (!mounted) return;
       setState(() {
         _result = res;
-        if (res.hasUpdate) {
-          _checking = false;
-          _installing = true;
-        }
+        _checking = false;
+        if (res.hasUpdate) _installing = true;
       });
-      if (res.hasUpdate) {
-        final done = await githubUpdater.downloadAndInstall(
-          res,
-          onProgress: (p) {
-            if (mounted) setState(() => _progress = p);
-          },
-        );
-        if (mounted) {
-          setState(() {
-            _result = done;
-            _progress = null;
-          });
-        }
+      if (!res.hasUpdate) return;
+      final done = await ref
+          .read(updateServiceProvider)
+          .downloadAndInstall(
+            res,
+            onProgress: (p) {
+              if (mounted) setState(() => _progress = p);
+            },
+          );
+      if (mounted) {
+        setState(() {
+          _result = done;
+          _progress = null;
+        });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => _result = UpdateCheckResult.failure('$e'));
-      }
+      if (mounted) setState(() => _result = UpdateCheckResult.failure('$e'));
     } finally {
       if (mounted) {
         setState(() {
@@ -739,63 +743,52 @@ class _UpdateSectionState extends State<_UpdateSection> {
     }
   }
 
-  Future<void> _openReleasePage() async {
-    // openReleasePage falls back to the releases page when the link is null.
-    await githubUpdater.openReleasePage(
-      _result ?? UpdateCheckResult.noReleases(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final res = _result;
+    final busy = _checking || _installing;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Primary action.
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: _busy ? null : _check,
-            icon: _busy
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.system_update_alt_rounded),
-            label: Text(
-              _installing && _progress != null
-                  ? 'Скачиваем ${(_progress! * 100).round()}%…'
-                  : _installing
-                  ? 'Скачиваем и открываем установщик…'
-                  : _checking
-                  ? 'Ищем новый релиз…'
-                  : res == null
-                  ? 'Проверить и обновить'
-                  : 'Проверить снова',
-            ),
+        if (busy) ...[
+          _ResultCard(
+            icon: _installing
+                ? Icons.cloud_download_rounded
+                : Icons.system_update_alt_rounded,
+            tone: scheme.primary,
+            title: _installing
+                ? (_progress == null
+                      ? 'Скачиваем обновление…'
+                      : 'Скачиваем ${(_progress! * 100).round()}%')
+                : 'Проверяем обновления…',
+            lines: [
+              if (_installing && _progress != null)
+                '${_result?.latestVersion ?? ''} · не закрывай приложение',
+              if (_installing && _progress == null)
+                'После загрузки Android запросит подтверждение установки',
+            ],
           ),
-        ),
-        if (_installing && _progress != null) ...[
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: _progress,
-              minHeight: 6,
-              backgroundColor: scheme.surfaceContainerHighest,
+          if (_installing && _progress != null) ...[
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: _progress,
+                minHeight: 6,
+                backgroundColor: scheme.surfaceContainerHighest,
+              ),
             ),
-          ),
-        ],
-        const SizedBox(height: 12),
-        _buildResult(scheme, res),
+          ],
+        ] else
+          _buildResult(scheme, res),
         const SizedBox(height: 8),
         Center(
           child: TextButton.icon(
-            onPressed: _busy ? null : _openReleasePage,
+            onPressed: () => ref
+                .read(updateServiceProvider)
+                .openReleasePage(res ?? UpdateCheckResult.noReleases()),
             icon: const Icon(Icons.open_in_new_rounded, size: 16),
             label: const Text('Открыть GitHub Releases'),
             style: TextButton.styleFrom(

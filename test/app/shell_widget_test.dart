@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mide/core/nav/app_tab_provider.dart';
+import 'package:mide/features/updater/update_service.dart';
+import 'package:mide/features/updater/updater_types.dart';
 import 'package:mide/main.dart';
 
 /// Pumps the app and lets the launch splash finish so tests start on the shell.
@@ -36,6 +38,60 @@ void main() {
       // Once the timeline completes the overlay removes itself and the pill
       // bar becomes interactive again.
       await tester.pump(const Duration(milliseconds: 2000));
+      await tester.pumpAndSettle();
+      expect(find.text('NPV'), findsOneWidget);
+    });
+
+    testWidgets('eases out instead of cutting to the shell', (tester) async {
+      await tester.pumpWidget(const ProviderScope(child: MideApp()));
+      await tester.pump();
+
+      // The overlay's own FadeTransition is the outermost one; sample it
+      // across the exit window and require a gradual, monotonic fade. A hard
+      // cut would show up as the same value twice and then gone.
+      // The exit fade wraps the splash's whole overlay Stack. Selecting it by
+      // that structure is unambiguous; the emblem has its own inner fade that
+      // holds at 1.0 throughout the exit, so index-based pickers made this
+      // test pass no matter what.
+      double overlayOpacity() => tester
+          .widget<FadeTransition>(
+            find.byWidgetPredicate(
+              (w) => w is FadeTransition && w.child is Stack,
+            ),
+          )
+          .opacity
+          .value;
+
+      // Hold phase: the splash must be fully opaque, not half-transparent.
+      await tester.pump(const Duration(milliseconds: 1200));
+      expect(overlayOpacity(), closeTo(1.0, 0.001));
+
+      final samples = <double>[];
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 150));
+        samples.add(overlayOpacity());
+      }
+
+      // Strictly non-increasing: the splash never pops back to visible.
+      for (var i = 1; i < samples.length; i++) {
+        expect(
+          samples[i],
+          lessThanOrEqualTo(samples[i - 1] + 1e-6),
+          reason: 'opacity went back up at sample $i: $samples',
+        );
+      }
+      // And it actually moved: several distinct intermediate values prove the
+      // fade is animated rather than a single-frame swap.
+      final distinct = samples.toSet();
+      expect(
+        distinct.length,
+        greaterThan(2),
+        reason: 'expected a glide, got $samples',
+      );
+      expect(samples.last, lessThan(0.9));
+
+      // Once the timeline ends the overlay leaves the tree entirely.
+      await tester.pump(const Duration(milliseconds: 1200));
       await tester.pumpAndSettle();
       expect(find.text('NPV'), findsOneWidget);
     });
@@ -152,16 +208,103 @@ void main() {
   });
 
   group('settings update section', () {
-    testWidgets('offers a check-and-update action', (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: SettingsPage())),
-        ),
+    Widget host(FakeUpdateService service) => ProviderScope(
+      overrides: [updateServiceProvider.overrideWithValue(service)],
+      child: const MaterialApp(home: Scaffold(body: SettingsPage())),
+    );
+
+    testWidgets('checks on its own, with no update button', (tester) async {
+      final service = FakeUpdateService(
+        result: UpdateCheckResult.upToDate(latestVersion: '1.0.6'),
       );
+      await tester.pumpWidget(host(service));
       await tester.pumpAndSettle();
 
-      expect(find.text('Проверить и обновить'), findsOneWidget);
+      // The check is what opening Settings does, so no action is required.
+      expect(service.checks, 1);
+      expect(find.text('Установлена последняя версия'), findsOneWidget);
+      expect(find.text('Проверить и обновить'), findsNothing);
+      expect(find.text('Проверить снова'), findsNothing);
       expect(find.text('Открыть GitHub Releases'), findsOneWidget);
     });
+
+    testWidgets('downloads and installs by itself when an update exists', (
+      tester,
+    ) async {
+      final service = FakeUpdateService(
+        result: UpdateCheckResult.updateAvailable(
+          latestVersion: '1.0.7',
+          asset: const UpdateAsset(
+            name: 'mide-1.0.7-arm64-release.apk',
+            url: 'https://github.com/wxstdo-boop/Mide/releases/download/v.apk',
+            sizeBytes: 1024,
+          ),
+        ),
+      );
+      await tester.pumpWidget(host(service));
+      await tester.pumpAndSettle();
+
+      expect(service.checks, 1);
+      expect(service.installs, 1, reason: 'no button to press');
+      expect(
+        find.textContaining('Обновление передано Android'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows the reason when the check fails', (tester) async {
+      final service = FakeUpdateService(
+        result: UpdateCheckResult.failure('Нет соединения с GitHub'),
+      );
+      await tester.pumpWidget(host(service));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Не удалось проверить'), findsOneWidget);
+      expect(find.text('Нет соединения с GitHub'), findsOneWidget);
+    });
+
+    testWidgets('a thrown error becomes a readable card, not a crash', (
+      tester,
+    ) async {
+      final service = FakeUpdateService(throwOnCheck: true);
+      await tester.pumpWidget(host(service));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Не удалось проверить'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
+}
+
+class FakeUpdateService implements UpdateService {
+  FakeUpdateService({this.result, this.throwOnCheck = false});
+
+  final UpdateCheckResult? result;
+  final bool throwOnCheck;
+
+  int checks = 0;
+  int installs = 0;
+  int releasesOpened = 0;
+
+  @override
+  Future<UpdateCheckResult> checkLatest() async {
+    checks++;
+    if (throwOnCheck) throw StateError('network down');
+    return result ?? UpdateCheckResult.noReleases();
+  }
+
+  @override
+  Future<UpdateCheckResult> downloadAndInstall(
+    UpdateCheckResult source, {
+    void Function(double? progress)? onProgress,
+  }) async {
+    installs++;
+    onProgress?.call(1);
+    return UpdateCheckResult.installerOpened(source, '/tmp/fake.apk');
+  }
+
+  @override
+  Future<void> openReleasePage(UpdateCheckResult result) async {
+    releasesOpened++;
+  }
 }

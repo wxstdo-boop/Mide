@@ -6,9 +6,10 @@ import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'github_config.dart';
+import 'update_service.dart';
 import 'updater_types.dart';
 
-class GithubUpdater {
+class GithubUpdater implements UpdateService {
   const GithubUpdater({this.dio, this.currentVersion});
 
   final Dio? dio;
@@ -28,6 +29,7 @@ class GithubUpdater {
 
   Dio get _client => dio ?? _makeDefault();
 
+  @override
   Future<UpdateCheckResult> checkLatest() async {
     final client = _client;
     client.options.headers['User-Agent'] = 'MideAutoUpdater/1.0';
@@ -96,13 +98,18 @@ class GithubUpdater {
   }
 
   /// Web cannot install an APK and currently has no matching release asset.
-  Future<UpdateCheckResult> downloadAndInstall(UpdateCheckResult source) async {
+  @override
+  Future<UpdateCheckResult> downloadAndInstall(
+    UpdateCheckResult source, {
+    void Function(double? progress)? onProgress,
+  }) async {
     final asset = source.asset;
     if (asset == null) return source;
     await openReleasePage(source);
     return UpdateCheckResult.installerOpened(source, 'browser:${asset.url}');
   }
 
+  @override
   Future<void> openReleasePage(UpdateCheckResult result) async {
     final url = result.releaseUrl ?? GithubConfig.releasesPage;
     try {
