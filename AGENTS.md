@@ -191,3 +191,25 @@ WSL note: if `runpane doctor --json` cannot find `/tmp/pane-daemon.../daemon.soc
 - `test/app/shell_widget_test.dart` samples the overlay opacity across the exit
   window and asserts the fade is monotonic with several distinct values. If you
   retime the splash, retime those samples with it.
+
+## Mide — application id
+
+- The id is `com.wetcorp.mide` on every target, and all six declarations must
+  stay in sync: Android `namespace` + `applicationId` (`android/app/
+  build.gradle.kts`), the Kotlin package **and** its directory under
+  `android/app/src/main/kotlin/`, iOS/macOS `PRODUCT_BUNDLE_IDENTIFIER`
+  (Runner *and* RunnerTests), macOS `AppInfo.xcconfig`, Linux
+  `APPLICATION_ID`, Windows `CompanyName`. `WireGuardEngine.providerId` in
+  `lib/features/vpn/providers/wireguard_engine.dart` carries the same id
+  because iOS compares it to the tunnel extension's bundle id.
+- Leave `CFBundleName`/`PRODUCT_NAME` as `mide`. That is the executable name,
+  not the identifier.
+- The FileProvider authority is `${applicationId}.fileprovider` in the
+  manifest and `"${packageName}.fileprovider"` in `MainActivity`, so both
+  follow the id automatically. Do not hardcode either.
+- Changing the id is a **breaking release**: Android sees a new
+  `applicationId` as a different app, so the build installs alongside the old
+  one and the in-app updater cannot migrate it (it hands the APK to the system
+  installer, which will not replace another package). Existing users need one
+  manual uninstall/reinstall and must re-approve the VPN profile. Bump the
+  version and say so in the release notes.
