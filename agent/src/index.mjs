@@ -33,6 +33,11 @@ try {
 
 // --- конфигурация ------------------------------------------------------------
 const PORT = Number(process.env.AGENT_PORT || 8765);
+// Loopback by default. The sidecar runs shell commands, so listening on every
+// interface would expose that to the whole LAN; the app always dials
+// 127.0.0.1, so binding wider only adds risk. Opt in explicitly if you really
+// need a remote client.
+const HOST = process.env.AGENT_HOST || "127.0.0.1";
 const PROVIDER = (process.env.PROVIDER || "ollama").toLowerCase();
 const MODEL = process.env.MODEL || "";
 const API_KEY = process.env.API_KEY || "";
@@ -123,8 +128,16 @@ const agent = new Agent({
 let running = false;
 
 // --- HTTP-сервер --------------------------------------------------------------
-function cors(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+// Only same-machine origins may talk to the sidecar. A wildcard here let any
+// page you happen to have open POST /chat and drive the shell tools.
+const LOOPBACK_ORIGIN = /^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/;
+
+function cors(req, res) {
+  const origin = req.headers.origin;
+  if (origin && LOOPBACK_ORIGIN.test(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
@@ -140,7 +153,7 @@ async function readJsonBody(req) {
 }
 
 const server = http.createServer(async (req, res) => {
-  cors(res);
+  cors(req, res);
   if (req.method === "OPTIONS") {
     res.writeHead(204);
     res.end();
@@ -302,14 +315,14 @@ function toolOutput(message) {
   return text && text.length > 4000 ? text.slice(0, 4000) + "\n…[обрезано]" : text;
 }
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log("═══════════════════════════════════════════════════");
   console.log("  Mide AGI sidecar (Cline SDK)");
   console.log(`  Провайдер : ${providerId}`);
   console.log(`  Модель    : ${modelId}`);
   console.log(`  Рабочая   : ${WORKSPACE}`);
   console.log(`  Тулы      : ${tools.map((t) => t.name).join(", ")}`);
-  console.log(`  Сервер    : http://127.0.0.1:${PORT}`);
+  console.log(`  Сервер    : http://${HOST}:${PORT}`);
   console.log(`  Подтверждение команд: ${AUTO_APPROVE ? "ВЫКЛ (всё разрешено)" : "через UI (POST /approve)"}`);
   console.log("═══════════════════════════════════════════════════");
 });
